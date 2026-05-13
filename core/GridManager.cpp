@@ -2,6 +2,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace GameConfig
 
 Grass::Grass()
 {
@@ -17,9 +18,9 @@ Grass::Grass()
 Grass::~Grass() {}
 
 // 判定此格子是否能种植植物
-bool Grass::canPlant(int row, int col)
+bool Grass::isValidCell(int row, int col) const
 {
-    if (row < 0 || row > 4 || col < 0 || col > 8)
+    if (row < 0 || row >= Rows || col < 0 || col >= Cols)
         return false;
     return grass[row][col] == nullptr;
 }

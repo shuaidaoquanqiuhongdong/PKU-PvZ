@@ -1,56 +1,84 @@
-# ==========================================
-# 1. C++ 编译产生的中间文件和可执行文件
-# ==========================================
+# This file is used to ignore files which are generated
+# ----------------------------------------------------------------------------
+
+*~
+*.autosave
+*.a
+*.core
+*.moc
 *.o
 *.obj
-*.out
-*.exe
-*.dll
-*.dylib
-*.a
-*.lib
-
-# ==========================================
-# 2. Qt 相关的专属垃圾文件 (极其重要!)
-# ==========================================
-# Qt Creator 自动生成的构建目录
-build-*/
-build_*/
-# Qt 个人用户配置文件 (绝不能同步给队友，否则环境必崩溃)
-*.pro.user
-*.pro.user.*
-*.qbs.user
-*.qbs.user.*
-# Qt 编译时自动生成的底层代码
-*.moc
-moc_*.cpp
-moc_*.h
-qrc_*.cpp
-ui_*.h
-Makefile
-Makefile.*
-.qmake.stash
-
-# ==========================================
-# 3. macOS 系统特有的隐藏垃圾文件
-# ==========================================
+*.orig
+*.rej
+*.so
+*.so.*
+*_pch.h.cpp
+*_resource.rc
+*.qm
+.#*
+*.*#
+core
+!core/
+tags
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# ==========================================
-# 4. Windows 系统特有的隐藏垃圾文件
-# ==========================================
+.directory
+*.debug
+Makefile*
+*.prl
+*.app
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
 Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
+*.res
+*.rc
+/.qmake.cache
+/.qmake.stash
+**/.qmlls.ini
 
-# ==========================================
-# 5. IDE 配置文件 (VS Code / Visual Studio)
-# ==========================================
-.vscode/
-.vs/
+# qtcreator generated files
+*.pro.user*
+*.qbs.user*
+CMakeLists.txt.user*
+
+# xemacs temporary files
+*.flc
+
+# Vim temporary files
+.*.swp
+
+# Visual Studio generated files
+*.ib_pdb_index
+*.idb
+*.ilk
+*.pdb
 *.sln
 *.suo
+*.vcproj
+*vcproj.*.*.user
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj
+*vcxproj.*
+
+# MinGW generated files
+*.Debug
+*.Release
+
+# Python byte code
+*.pyc
+
+# Binaries
+# --------
+*.dll
+*.exe
+
+# Directories with generated files
+.moc/
+.obj/
+.pch/
+.rcc/
+.uic/
+/build*/
+/.qtcreator/
