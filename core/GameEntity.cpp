@@ -1,4 +1,4 @@
-#include "Entity.h"
+#include "GameEntity.h"
 
 Entity::Entity(int r, int c, int hp_) : row(r), col(c), hp(hp_), dead(false) {}
 

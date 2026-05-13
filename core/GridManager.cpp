@@ -1,4 +1,4 @@
-#include "Grass.h"
+#include "GridManager.h"
 #include <iostream>
 
 using namespace std;
