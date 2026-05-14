@@ -1,7 +1,7 @@
 #pragma once
 #include "GameEntity.h"
 
-class Zombie : public Entity
+class Zombie : public GameEntity
 {
 protected:
     int speed; // 僵尸的移动速度

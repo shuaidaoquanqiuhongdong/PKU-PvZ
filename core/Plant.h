@@ -1,7 +1,7 @@
 #pragma once
 #include "GameEntity.h"
 
-class Plant : public Entity
+class Plant : public GameEntity
 {
 protected:
     int cost; // 植物消耗的阳光数量

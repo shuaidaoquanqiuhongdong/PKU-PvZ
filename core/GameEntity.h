@@ -1,14 +1,30 @@
 #pragma once
+#include <QObject>
+#include <QGraphicsPixmapItem>
 
-class Entity
+enum class EntityType
 {
+    Plant,
+    Zombie,
+    Bullet,
+    Sun,
+    Effect
+};
+
+class GameEntity: public QObject, public QGraphicsPixmapItem
+{
+    Q_OBJECT
 protected:
-    int row, col, hp;
-    bool dead;
+    int row, col, hp, maxHp;
+    bool alive;
+    EntityType entityType;
 public:
-    Entity(int r, int c, int hp_);
-    virtual ~Entity();
+    GameEntity(int r, int c, int hp_, EntityType entityType_);
+    virtual ~GameEntity();
+    virtual void updateEntity();
     virtual void takeDamage(int damage); // Entity受伤并判定是否死亡
-    bool isDead() const;                 // 返回Entity存活情况
-    virtual void tick();
+    virtual void die();
+    bool isAlive() const;                // 返回Entity存活情况
+    int getHp() const;
+    EntityType getEntityType() const;
 };
