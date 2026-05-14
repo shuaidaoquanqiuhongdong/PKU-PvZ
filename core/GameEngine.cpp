@@ -6,6 +6,8 @@ using namespace std;
 GameEngine::GameEngine()
 {
     gridManager = new GridManager();
+    gameLoopTimer = new QTimer(this);
+    connect(gameLoopTimer, &QTimer::timeout, this, &GameEngine::updateGame);
 }
 
 void GameEngine::addPlant(Plant* plant)
@@ -29,4 +31,9 @@ void GameEngine::updateGame()
     {
         plant->updateEntity();
     }
+}
+
+void GameEngine::start()
+{
+    gameLoopTimer->start(GameConfig::GameLoopInterval);
 }
