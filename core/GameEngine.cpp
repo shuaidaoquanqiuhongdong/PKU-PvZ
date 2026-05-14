@@ -3,70 +3,30 @@
 
 using namespace std;
 
-GameManager::GameManager() : sunlight(50), frameCount(0) {}
-
-void GameManager::addZombie(Zombie *z)
+GameEngine::GameEngine()
 {
-    zombies.push_back(z);
-    cout << "生成了一只僵尸！" << endl;
+    gridManager = new GridManager();
 }
 
-// 提供给前端的种植物接口
-void GameManager::buyAndPlant(int row, int col, Plant *p)
+void GameEngine::addPlant(Plant* plant)
 {
-    grass.addPlant(row, col, p);
+    plants.append(plant);
 }
 
-// 游戏主循环的一帧
-void GameManager::update()
+void GameEngine::addZombie(Zombie* zombie)
 {
-    ++frameCount;
-    cout << "--- 当前游戏帧：" << frameCount << " ---" << endl;
-    // 让草坪上所有的植物都行动一次
-    for (int i = 0; i < 5; ++i)
+    zombies.append(zombie);
+}
+
+void GameEngine::updateGame()
+{
+    for(auto zombie : zombies)
     {
-        for (int j = 0; j < 9; ++j)
-        {
-            Plant *p = grass.getPlantAt(i, j);
-            if (p != nullptr && !p->isDead())
-            {
-                p->tick();
-            }
-        }
+        zombie->updateEntity();
     }
-    // 让场上所有的僵尸都行动一次
-    for (auto z : zombies)
+
+    for(auto plant : plants)
     {
-        if (!z->isDead())
-        {
-            z->tick();
-        }
-    }
-    // 战场打扫 ：把死掉的僵尸清理掉
-    for (auto it = zombies.begin(); it != zombies.end();)
-    {
-        if ((*it)->isDead())
-        {
-            cout << "清理了一具僵尸的尸体！" << endl;
-            delete *it;             // 释放内存
-            it = zombies.erase(it); // 从数组里剔除
-        }
-        else
-        {
-            ++it;
-        }
-    }
-    // 打扫植物的尸体
-    for (int i = 0; i < 5; ++i)
-    {
-        for (int j = 0; j < 9; ++j)
-        {
-            Plant *p = grass.getPlantAt(i, j);
-            if (p != nullptr && p->isDead())
-            {
-                cout << i << "行" << j << "列 的植物阵亡了！" << endl;
-                grass.removePlant(i, j);
-            }
-        }
+        plant->updateEntity();
     }
 }
