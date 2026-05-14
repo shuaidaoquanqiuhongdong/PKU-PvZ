@@ -11,3 +11,10 @@ public:
     void updateEntity() override;
     void moveLeft();
 };
+
+class GenziZombie : public Zombie
+{
+public:
+    GenziZombie(int row_, int col_);
+    ~GenziZombie();
+};

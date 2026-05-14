@@ -13,3 +13,7 @@ void Zombie::updateEntity()
 {
     moveLeft();
 }
+
+GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, 300, 1) {}
+
+GenziZombie::~GenziZombie() {}
