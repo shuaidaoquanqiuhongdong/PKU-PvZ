@@ -8,4 +8,5 @@ protected:
 public:
     Plant(int r, int c, int hp_, int cost_);
     virtual ~Plant();
+    void updateEntity() override;
 };
