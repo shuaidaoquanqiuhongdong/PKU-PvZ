@@ -4,7 +4,12 @@ Zombie::Zombie(int r, int c, int hp_, int speed_) : GameEntity(r, c, hp_, Entity
 
 Zombie::~Zombie() {}
 
+void Zombie::moveLeft()
+{
+    moveBy(-speed, 0);
+}
+
 void Zombie::updateEntity()
 {
-
+    moveLeft();
 }

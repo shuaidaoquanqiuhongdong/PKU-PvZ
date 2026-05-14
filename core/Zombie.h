@@ -9,4 +9,5 @@ public:
     Zombie(int r, int c, int hp_, int speed_);
     ~Zombie();
     void updateEntity() override;
+    void moveLeft();
 };
