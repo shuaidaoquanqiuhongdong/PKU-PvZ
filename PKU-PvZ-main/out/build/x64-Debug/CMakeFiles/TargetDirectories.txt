@@ -1,0 +1,8 @@
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/PvZLiteQt.dir
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/list_install_components.dir
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/install.dir
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/install/local.dir
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/PvZLiteQt_autogen_timestamp_deps.dir
+D:/projectmy/PKU-PvZ/PKU-PvZ-main/out/build/x64-Debug/CMakeFiles/PvZLiteQt_autogen.dir
