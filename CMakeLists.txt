@@ -5,32 +5,19 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
 
+file(GLOB_RECURSE SOURCES
+    core/*.cpp core/*.h
+    animation/*.cpp animation/*.h
+)
+
 qt_add_executable(PvZLiteQt
     WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    core/GameConfig.h
-    core/GameEngine.cpp
-    core/GameEngine.h
-    core/GameEntity.cpp
-    core/GameEntity.h
-    core/GridManager.cpp
-    core/GridManager.h
-    core/Plant.cpp
-    core/Plant.h
-    core/Zombie.cpp
-    core/Zombie.h
-    animation/AnimationManager.cpp
-    animation/AnimationManager.h
-    animation/EffectItem.cpp
-    animation/EffectItem.h
-    animation/ResourceManager.cpp
-    animation/ResourceManager.h
-    animation/SpriteAnimation.cpp
-    animation/SpriteAnimation.h
     resources/resources.qrc
+    ${SOURCES}
 )
 
 target_link_libraries(PvZLiteQt
