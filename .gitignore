@@ -82,3 +82,23 @@ CMakeLists.txt.user*
 .uic/
 /build*/
 /.qtcreator/
+/out/
+/.vs/
+/.vscode/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.ninja
+.ninja_deps
+.ninja_log
+build.ninja
+compile_commands.json
+
+# CTest
+Testing/
+
+# Text files (except CMakeLists.txt)
+*.txt
+!CMakeLists.txt
