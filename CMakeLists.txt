@@ -8,6 +8,7 @@ qt_standard_project_setup()
 file(GLOB_RECURSE SOURCES
     core/*.cpp core/*.h
     animation/*.cpp animation/*.h
+    ui/*.cpp ui/*.h
 )
 
 qt_add_executable(PvZLiteQt
