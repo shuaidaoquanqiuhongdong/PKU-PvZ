@@ -37,3 +37,18 @@ void GameEngine::start()
 {
     gameLoopTimer->start(GameConfig::GameLoopInterval);
 }
+
+bool GameEngine::placePlant(QString plantType, int row, int col)
+{
+    if (!gridManager->isCellEmpty(row, col))
+    {
+        return false;
+    }
+    Plant* plant = new Plant(row, col, 300, 0, plantType);
+    QPointF pos = gridManager->cellToScenePos(row, col);
+    plant->setPos(pos);
+    plants.append(plant);
+    gridManager->placePlant(plant, row, col);
+    emit entityCreated(plant);
+    return true;
+}

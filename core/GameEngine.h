@@ -18,6 +18,7 @@ public:
     void addZombie(Zombie* zombie);
     void updateGame();
     void start();
+    bool placePlant(QString plantType, int row, int col);
 signals:
     void sunChanged(int value);               // 阳光变化，前端更新显示
     void entityCreated(GameEntity* entity);   // 新实体诞生，前端加进场景
