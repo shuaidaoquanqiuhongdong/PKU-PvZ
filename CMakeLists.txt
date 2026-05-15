@@ -22,6 +22,15 @@ qt_add_executable(PvZLiteQt
     core/Plant.h
     core/Zombie.cpp
     core/Zombie.h
+    animation/AnimationManager.cpp
+    animation/AnimationManager.h
+    animation/EffectItem.cpp
+    animation/EffectItem.h
+    animation/ResourceManager.cpp
+    animation/ResourceManager.h
+    animation/SpriteAnimation.cpp
+    animation/SpriteAnimation.h
+    resources/resources.qrc
 )
 
 target_link_libraries(PvZLiteQt
