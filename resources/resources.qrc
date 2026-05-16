@@ -1,17 +1,3 @@
 <RCC>
-    <qresource prefix="/images">
-        <file alias="background/lawn.png">images/background/lawn.png</file>
-
-        <file alias="plants/shooter/idle_0.png">images/plants/shooter/idle_0.png</file>
-        <file alias="plants/shooter/idle_1.png">images/plants/shooter/idle_1.png</file>
-        <file alias="plants/shooter/idle_2.png">images/plants/shooter/idle_2.png</file>
-
-        <file alias="zombies/normal/walk_0.png">images/zombies/normal/walk_0.png</file>
-        <file alias="zombies/normal/walk_1.png">images/zombies/normal/walk_1.png</file>
-        <file alias="zombies/normal/walk_2.png">images/zombies/normal/walk_2.png</file>
-        <file alias="zombies/normal/walk_3.png">images/zombies/normal/walk_3.png</file>
-
-        <file alias="effects/place_0.png">images/effects/place_0.png</file>
-        <file alias="effects/place_1.png">images/effects/place_1.png</file>
-    </qresource>
+    <qresource prefix="/images"/>
 </RCC>

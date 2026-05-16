@@ -2,22 +2,38 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QStackedWidget>
+#include <QTimer>
 
-QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
-}
-QT_END_NAMESPACE
+class MainMenuWidget;
+class GamePageWidget;
+class GameOverWidget;
+class GameEngine;
+class AnimationManager;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
+public slots:
+    void showMainMenu();
+    void startGame();
+    void showGameOver(bool win);
+    void restartGame();
+    void goToMainMenu();
+
 private:
-    Ui::MainWindow *ui;
+    void clearGame();
+    QStackedWidget* stackedWidget;
+    MainMenuWidget* mainMenuWidget;
+    GamePageWidget* gamePageWidget;
+    GameOverWidget* gameOverWidget;
+    GameEngine* gameEngine;
+    AnimationManager* animationManager;
+    QTimer* zombieSpawnTimer;
 };
-#endif // MAINWINDOW_H
+
+#endif
