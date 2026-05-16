@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     , zombieSpawnTimer(nullptr)
 {
     setWindowTitle("PvZLiteQt - 植物大战僵尸");
-    setFixedSize(900, 600);
+    setFixedSize(900, 610);
 
     stackedWidget = new QStackedWidget(this);
     setCentralWidget(stackedWidget);

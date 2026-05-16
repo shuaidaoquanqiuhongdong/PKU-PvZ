@@ -4,11 +4,11 @@ namespace GameConfig
 {
     // --- 场景与网格设置 ---(等后续背景制作出来再修改参数)
     inline constexpr int SceneWidth = 900;  // 场景总宽度
-    inline constexpr int SceneHeight = 600; // 场景总高度
+    inline constexpr int SceneHeight = 550; // 场景总高度
     inline constexpr int Rows = 5;          // 草坪行数
     inline constexpr int Cols = 9;          // 草坪列数
     inline constexpr int GridStartX = 120;  // 网格起始X坐标（给左边留出界面空间）
-    inline constexpr int GridStartY = 80;   // 网格起始Y坐标（给顶部留出界面空间）
+    inline constexpr int GridStartY = 10;   // 网格起始Y坐标（给顶部留出界面空间）
     inline constexpr int CellWidth = 80;    // 每个格子的宽度
     inline constexpr int CellHeight = 90;   // 每个格子的高度
 
