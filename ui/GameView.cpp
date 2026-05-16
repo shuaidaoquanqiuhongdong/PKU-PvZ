@@ -26,7 +26,7 @@ void GameView::initScene()
 
 void GameView::drawBackground()
 {
-    scene->setBackgroundBrush(QColor("#4a7c2e"));
+    scene->setBackgroundBrush(QPixmap(":/images/background/lawn.png"));
 }
 
 void GameView::drawGrid()
