@@ -16,7 +16,6 @@ qt_add_executable(PvZLiteQt
     main.cpp
     mainwindow.cpp
     mainwindow.h
-    mainwindow.ui
     resources/resources.qrc
     ${SOURCES}
 )
