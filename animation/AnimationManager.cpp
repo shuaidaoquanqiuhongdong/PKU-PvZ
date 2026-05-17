@@ -3,12 +3,11 @@
 #include "ResourceManager.h"
 #include "SpriteAnimation.h"
 #include "EffectItem.h"
-
 #include "core/GameEntity.h"
 #include "core/Plant.h"
 #include "core/Zombie.h"
-#include "core/Bullet.h"
-#include "core/Sun.h"
+//#include "core/Bullet.h"
+//#include "core/Sun.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsOpacityEffect>
@@ -45,12 +44,7 @@ void AnimationManager::bindEntity(GameEntity* entity)
         break;
 
     case EntityType::Bullet:
-        setupBulletAnimations(static_cast<Bullet*>(entity));
-        break;
-
     case EntityType::Sun:
-        setupSunAnimations(static_cast<Sun*>(entity));
-        break;
 
     case EntityType::Effect:
         break;
@@ -242,81 +236,23 @@ void AnimationManager::playBulletHitEffect(QPointF pos)
 
 void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF end)
 {
-    if (!sun) {
-        return;
-    }
-
-    sun->setPos(start);
-
-    auto* animation = new QPropertyAnimation(sun, "pos", this);
-    animation->setDuration(2000);
-    animation->setStartValue(start);
-    animation->setEndValue(end);
-    animation->setEasingCurve(QEasingCurve::OutBounce);
-
-    connect(animation, &QPropertyAnimation::finished, this, [this, sun, animation]() {
-        animation->deleteLater();
-        playSunIdleAnimation(sun);
-        });
-
-    animation->start();
+    Q_UNUSED(sun)
+    Q_UNUSED(start)
+    Q_UNUSED(end)
+    // 暂不实现阳光生成动画
 }
 
 void AnimationManager::playSunIdleAnimation(Sun* sun)
 {
-    if (!sun) {
-        return;
-    }
-
-    const QPointF start = sun->pos();
-    const QPointF end = start + QPointF(0, -10);
-
-    auto* animation = new QPropertyAnimation(sun, "pos", this);
-    animation->setDuration(1000);
-    animation->setStartValue(start);
-    animation->setEndValue(end);
-    animation->setLoopCount(-1);
-    animation->setEasingCurve(QEasingCurve::InOutSine);
-
-    animation->start();
+    Q_UNUSED(sun)
+    // 暂不实现阳光空闲动画
 }
 
 void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
 {
-    if (!sun) {
-        return;
-    }
-
-    auto* opacityEffect = new QGraphicsOpacityEffect(sun);
-    sun->setGraphicsEffect(opacityEffect);
-
-    auto* posAnimation = new QPropertyAnimation(sun, "pos", this);
-    posAnimation->setDuration(500);
-    posAnimation->setStartValue(sun->pos());
-    posAnimation->setEndValue(targetPos);
-    posAnimation->setEasingCurve(QEasingCurve::InQuad);
-
-    auto* opacityAnimation = new QPropertyAnimation(opacityEffect, "opacity", this);
-    opacityAnimation->setDuration(500);
-    opacityAnimation->setStartValue(1.0);
-    opacityAnimation->setEndValue(0.0);
-
-    auto* group = new QParallelAnimationGroup(this);
-    group->addAnimation(posAnimation);
-    group->addAnimation(opacityAnimation);
-
-    connect(group, &QParallelAnimationGroup::finished, this, [this, sun, opacityEffect, group]() {
-        if (sun) {
-            sun->setGraphicsEffect(nullptr);
-        }
-
-        opacityEffect->deleteLater();
-        group->deleteLater();
-
-        emit sunCollectAnimationFinished(sun);
-        });
-
-    group->start();
+    Q_UNUSED(sun)
+    Q_UNUSED(targetPos)
+    // 暂不实现阳光收集动画
 }
 
 void AnimationManager::setupPlantAnimations(Plant* plant)

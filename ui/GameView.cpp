@@ -3,6 +3,7 @@
 #include "core/GameConfig.h"
 #include <QMouseEvent>
 #include <QPainter>
+#include <QDebug>
 
 GameView::GameView(QWidget *parent)
     : QGraphicsView(parent)
@@ -27,6 +28,14 @@ void GameView::initScene()
 void GameView::drawBackground()
 {
     scene->setBackgroundBrush(QColor("#4a7c2e"));
+
+    QString imagePath = QString(PROJECT_SOURCE_DIR) + "/resources/images/background/lawn.png";
+    QPixmap bg(imagePath);
+    if (!bg.isNull()) {
+        auto* bgItem = scene->addPixmap(bg);
+        bgItem->setPos(0, 0);
+        bgItem->setZValue(0);
+    }
 }
 
 void GameView::drawGrid()

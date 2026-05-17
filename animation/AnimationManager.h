@@ -74,6 +74,8 @@ private:
     void setupSunAnimations(Sun* sun);
 
     int animationPriority(AnimationState state) const;
+    void addSpriteAnimation(GameEntity* entity, AnimationState state,
+                            const QVector<QPixmap>& frames, int interval, bool loop);
 };
 
 #endif // ANIMATIONMANAGER_H

@@ -4,7 +4,7 @@
 CardPanel::CardPanel(QWidget *parent)
     : QWidget(parent)
 {
-    setFixedHeight(90);
+    setFixedHeight(70);
     setStyleSheet("background-color: #3a3a3a;");
     layout = new QHBoxLayout(this);
     layout->setContentsMargins(10, 5, 10, 5);

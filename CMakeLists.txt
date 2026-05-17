@@ -16,10 +16,12 @@ qt_add_executable(PvZLiteQt
     main.cpp
     mainwindow.cpp
     mainwindow.h
-    mainwindow.ui
     resources/resources.qrc
     ${SOURCES}
 )
+
+target_include_directories(PvZLiteQt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(PvZLiteQt PRIVATE PROJECT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(PvZLiteQt
     PRIVATE
