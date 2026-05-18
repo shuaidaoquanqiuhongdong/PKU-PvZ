@@ -10,6 +10,7 @@ public:
     ~Zombie();
     void updateEntity() override;
     void moveLeft();
+    int getRow();
 };
 
 class GenziZombie : public Zombie
