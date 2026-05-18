@@ -12,4 +12,5 @@ public:
     ~Bullet();
     void updateEntity() override;
     bool collideWithZombie(Zombie* zombie);
+    int getDamage() const { return damage; }
 };
