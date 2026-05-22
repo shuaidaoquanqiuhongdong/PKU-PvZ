@@ -4,6 +4,11 @@
 #include <QObject>
 #include <QHash>
 #include <QPointF>
+#include <QPixmap>
+#include <QVector>
+
+class QAbstractAnimation;
+class QGraphicsScene;
 
 class GameEntity;
 class Plant;
@@ -54,10 +59,20 @@ public:
     void playHitEffect(GameEntity* entity);
     void playDeathEffect(GameEntity* entity);
     void playPlantPlaceEffect(Plant* plant);
+
     void playBulletHitEffect(QPointF pos);
+
+    // Prompt 标准接口：需要调用者给出起点和终点。
     void playSunSpawnAnimation(Sun* sun, QPointF start, QPointF end);
     void playSunIdleAnimation(Sun* sun);
     void playSunCollectAnimation(Sun* sun, QPointF targetPos);
+
+    // 仓库现有 GameEngine 兼容接口：
+    // GameEngine::sunCreated(Sun*) 可以直接连接到这里。
+    void playSunSpawnAnimation(Sun* sun);
+
+    // GameEngine::sunCollected(Sun*) 可以直接连接到这里。
+    void playSunCollectAnimation(Sun* sun);
 
 signals:
     void deathAnimationFinished(GameEntity* entity);
@@ -68,14 +83,29 @@ private:
     QHash<GameEntity*, QHash<AnimationState, SpriteAnimation*>> animations;
     QHash<GameEntity*, AnimationState> currentStates;
 
+    // 用于播放 bullet hit effect，因为 playBulletHitEffect 只有 QPointF 参数，没有 scene 参数。
+    QGraphicsScene* lastKnownScene = nullptr;
+
+    // 阳光的 Spawn / Idle / Collect 位置动画。
+    QHash<Sun*, QAbstractAnimation*> sunMotionAnimations;
+
     void setupPlantAnimations(Plant* plant);
     void setupZombieAnimations(Zombie* zombie);
     void setupBulletAnimations(Bullet* bullet);
     void setupSunAnimations(Sun* sun);
 
     int animationPriority(AnimationState state) const;
-    void addSpriteAnimation(GameEntity* entity, AnimationState state,
-                            const QVector<QPixmap>& frames, int interval, bool loop);
+
+    void addSpriteAnimation(
+        GameEntity* entity,
+        AnimationState state,
+        const QVector<QPixmap>& frames,
+        int interval,
+        bool loop
+    );
+
+    void stopSunMotionAnimation(Sun* sun);
+    QPointF defaultSunCollectTarget() const;
 };
 
 #endif // ANIMATIONMANAGER_H

@@ -12,7 +12,7 @@ void Sun::collect()
     if (!collected)
     {
         collected = true;
-        alive - false;
+        alive = false;
     }
 }
 
