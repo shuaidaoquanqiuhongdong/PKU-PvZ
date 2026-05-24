@@ -5,6 +5,7 @@
 #include <QTimer>
 #include "Bullet.h"
 #include "Sun.h"
+#include "../animation/AnimationManager.h"
 
 class GameEngine: public QObject
 {
@@ -31,12 +32,16 @@ public:
     void cleanupDeadEntities();
     void generateSun();
     void collectSun(Sun* sun);
+    void checkZombieAttackPlant();
+    void checkGameResult();
+    void removeEntitySafely(GameEntity* entity);
 signals:
-    void sunChanged(int value);               // 阳光变化，前端更新显示
-    void entityCreated(GameEntity* entity);   // 新实体诞生，前端加进场景
-    void entityDied(GameEntity* entity);      // 实体死亡，动画播放死亡效果
-    void gameOver(bool win);                  // 游戏结束，前端切换页面
+    void sunChanged(int value);
+    void entityCreated(GameEntity* entity);
+    void entityDied(GameEntity* entity);
+    void gameOver(bool win);
     void bulletHit(QPointF pos);
-    void sunCreated(Sun*sun);
+    void sunCreated(Sun* sun);
     void sunCollected(Sun* sun);
+    void entityAnimationChanged(GameEntity* entity, AnimationState state);
 };

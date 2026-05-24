@@ -80,6 +80,21 @@ void MainWindow::startGame()
     connect(gameEngine, &GameEngine::sunChanged,
             cardPanel, &CardPanel::updateCardState);
 
+    // 引擎 → 动画：攻击/状态变化
+    connect(gameEngine, &GameEngine::entityAnimationChanged,
+            animationManager, &AnimationManager::playAnimation);
+
+    // 引擎 → 动画：子弹命中
+    connect(gameEngine, &GameEngine::bulletHit,
+            animationManager, &AnimationManager::playBulletHitEffect);
+    // 阳光收集动画暂时绕过（动画内部有bug待修）
+    // connect(gameEngine, &GameEngine::sunCollected,
+    //         animationManager, qOverload<Sun*>(&AnimationManager::playSunCollectAnimation));
+
+    // 动画 → 引擎：死亡动画播完安全删除
+    connect(animationManager, &AnimationManager::deathAnimationFinished,
+            gameEngine, &GameEngine::removeEntitySafely);
+
     // 引擎 → 主窗口：游戏结束
     connect(gameEngine, &GameEngine::gameOver,
             this, &MainWindow::showGameOver);

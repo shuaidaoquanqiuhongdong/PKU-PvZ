@@ -27,4 +27,6 @@ public:
     bool isAlive() const;                // 返回Entity存活情况
     int getHp() const;
     EntityType getEntityType() const;
+    int getRow() const { return row; }
+    int getCol() const { return col; }
 };

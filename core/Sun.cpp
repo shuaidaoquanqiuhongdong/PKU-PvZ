@@ -1,7 +1,10 @@
 #include "Sun.h"
 #include <QGraphicsSceneMouseEvent>
 
-Sun::Sun(int value_) : GameEntity(0, 0, 1, EntityType::Sun), value(value_), collected(false) {}
+Sun::Sun(int value_) : GameEntity(0, 0, 1, EntityType::Sun), value(value_), collected(false)
+{
+    setAcceptedMouseButtons(Qt::LeftButton);
+}
 
 Sun::~Sun() {}
 
@@ -19,6 +22,7 @@ void Sun::collect()
 void Sun::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     Q_UNUSED(event);
+    qDebug()<<"Sun clicked!";
     if (!collected)
         emit clicked(this);
 }
