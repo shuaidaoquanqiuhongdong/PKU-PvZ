@@ -38,7 +38,4 @@ Bullet* Plant::createBullet()
     return b;
 }
 
-QString Plant::getPlantType() const
-{
-    return plantType;
-}
+
