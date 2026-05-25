@@ -22,5 +22,7 @@
 		<file alias="effects/pea_hit_0.png">images/effects/pea_hit_0.png</file>
 		<file alias="effects/pea_hit_1.png">images/effects/pea_hit_1.png</file>
 		<file alias="effects/pea_hit_2.png">images/effects/pea_hit_2.png</file>
+
+		<file alias="sunlight.png">images/sunlight.png</file>
 	</qresource>
 </RCC>
