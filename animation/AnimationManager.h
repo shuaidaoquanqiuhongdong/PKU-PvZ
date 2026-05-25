@@ -107,8 +107,11 @@ private:
     void stopSunMotionAnimation(Sun* sun);
     QPointF defaultSunCollectTarget() const;
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 46c5996a837aeaa02c1cafaddee249428e9d3f33
 };
 
 #endif // ANIMATIONMANAGER_H
