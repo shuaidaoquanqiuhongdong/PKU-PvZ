@@ -106,6 +106,13 @@ private:
 
     void stopSunMotionAnimation(Sun* sun);
     QPointF defaultSunCollectTarget() const;
+
+    QGraphicsScene* lastKnownScene = nullptr;
+    QHash<Sun*, QAbstractAnimation*> sunMotionAnimations;
+
+    void stopSunMotionAnimation(Sun* sun);
+    QPointF defaultSunCollectTarget() const;
+
 };
 
 #endif // ANIMATIONMANAGER_H

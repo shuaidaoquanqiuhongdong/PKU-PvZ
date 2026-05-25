@@ -10,15 +10,71 @@
 #include "core/Bullet.h"
 #include "core/Sun.h"
 
-#include <QGraphicsScene>
-#include <QGraphicsOpacityEffect>
-#include <QPropertyAnimation>
-#include <QParallelAnimationGroup>
-#include <QSequentialAnimationGroup>
 #include <QAbstractAnimation>
-#include <QEasingCurve>
-#include <QPointer>
 #include <QDebug>
+#include <QEasingCurve>
+#include <QGraphicsOpacityEffect>
+#include <QGraphicsScene>
+#include <QParallelAnimationGroup>
+#include <QPointer>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
+#include <QTimer>
+
+namespace {
+
+    bool canReleaseHighPriorityState(AnimationState oldState, AnimationState newState)
+    {
+        if (oldState == AnimationState::Death) {
+            return false;
+        }
+
+        if ((oldState == AnimationState::Attack || oldState == AnimationState::Produce) &&
+            (newState == AnimationState::Walk || newState == AnimationState::Idle)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    QString plantFolderFor(Plant* plant)
+    {
+        if (!plant) {
+            return QStringLiteral(":/images/plants/shooter");
+        }
+
+        const QString type = plant->getPlantType().toLower();
+
+        if (type == "sunproducer" ||
+            type == "sunplant" ||
+            type == "sun_producer" ||
+            type.contains("sun")) {
+            return QStringLiteral(":/images/plants/sunproducer");
+        }
+
+        if (type == "wall" ||
+            type == "wallplant" ||
+            type.contains("wall")) {
+            return QStringLiteral(":/images/plants/wall");
+        }
+
+        if (type == "shooter" ||
+            type == "shooterplant" ||
+            type.contains("shoot") ||
+            type.contains("pea")) {
+            return QStringLiteral(":/images/plants/shooter");
+        }
+
+        return QStringLiteral(":/images/plants/shooter");
+    }
+
+    QString zombieFolderFor(Zombie* zombie)
+    {
+        Q_UNUSED(zombie);
+        return QStringLiteral(":/images/zombies/normal");
+    }
+
+} // namespace
 
 AnimationManager::AnimationManager(QObject* parent)
     : QObject(parent)
@@ -35,6 +91,13 @@ void AnimationManager::bindEntity(GameEntity* entity)
         lastKnownScene = entity->scene();
     }
 
+    QPointer<GameEntity> safeEntity(entity);
+    QTimer::singleShot(0, this, [this, safeEntity]() {
+        if (safeEntity && safeEntity->scene()) {
+            lastKnownScene = safeEntity->scene();
+        }
+        });
+
     if (animations.contains(entity)) {
         return;
     }
@@ -44,10 +107,12 @@ void AnimationManager::bindEntity(GameEntity* entity)
     switch (entity->getEntityType()) {
     case EntityType::Plant:
         setupPlantAnimations(static_cast<Plant*>(entity));
+        playAnimation(entity, AnimationState::Idle);
         break;
 
     case EntityType::Zombie:
         setupZombieAnimations(static_cast<Zombie*>(entity));
+        playAnimation(entity, AnimationState::Walk);
         break;
 
     case EntityType::Bullet:
@@ -56,15 +121,36 @@ void AnimationManager::bindEntity(GameEntity* entity)
 
     case EntityType::Sun:
         setupSunAnimations(static_cast<Sun*>(entity));
+        playAnimation(entity, AnimationState::Idle);
         break;
 
     case EntityType::Effect:
         break;
     }
 
-    connect(entity, &QObject::destroyed, this, [this, entity]() {
+    Sun* sunKey = nullptr;
+    if (entity->getEntityType() == EntityType::Sun) {
+        sunKey = static_cast<Sun*>(entity);
+    }
+
+    connect(entity, &QObject::destroyed, this, [this, entity, sunKey]() {
+        if (sunKey) {
+            QAbstractAnimation* motion = sunMotionAnimations.take(sunKey);
+            if (motion) {
+                motion->stop();
+                motion->deleteLater();
+            }
+        }
+
+        auto entityAnimations = animations.take(entity);
+        for (SpriteAnimation* animation : entityAnimations) {
+            if (animation) {
+                animation->stop();
+                animation->deleteLater();
+            }
+        }
+
         currentStates.remove(entity);
-        animations.remove(entity);
         });
 }
 
@@ -78,12 +164,7 @@ void AnimationManager::unbindEntity(GameEntity* entity)
         stopSunMotionAnimation(static_cast<Sun*>(entity));
     }
 
-    if (!animations.contains(entity)) {
-        return;
-    }
-
     auto entityAnimations = animations.take(entity);
-
     for (SpriteAnimation* animation : entityAnimations) {
         if (animation) {
             animation->stop();
@@ -100,6 +181,10 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
         return;
     }
 
+    if (entity->scene()) {
+        lastKnownScene = entity->scene();
+    }
+
     if (!animations.contains(entity)) {
         bindEntity(entity);
     }
@@ -110,7 +195,8 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
         return;
     }
 
-    if (animationPriority(state) < animationPriority(oldState)) {
+    const bool releaseTransition = canReleaseHighPriorityState(oldState, state);
+    if (!releaseTransition && animationPriority(state) < animationPriority(oldState)) {
         return;
     }
 
@@ -127,11 +213,16 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
     auto& table = animations[entity];
 
     if (!table.contains(state)) {
-        // Bullet::Move 当前使用单张静态图，不一定需要 SpriteAnimation。
         if (entity->getEntityType() != EntityType::Bullet) {
             qWarning() << "AnimationManager: missing animation state:"
                 << static_cast<int>(state);
         }
+        return;
+    }
+
+    SpriteAnimation* nextAnimation = table.value(state, nullptr);
+
+    if (oldState == state && nextAnimation && nextAnimation->isRunning()) {
         return;
     }
 
@@ -141,9 +232,9 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
 
     currentStates[entity] = state;
 
-    SpriteAnimation* animation = table[state];
-    if (animation) {
-        animation->start();
+    if (nextAnimation) {
+        nextAnimation->reset();
+        nextAnimation->start();
     }
 }
 
@@ -153,16 +244,32 @@ void AnimationManager::playHitEffect(GameEntity* entity)
         return;
     }
 
+    if (entity->scene()) {
+        lastKnownScene = entity->scene();
+    }
+
+    if (currentStates.value(entity, AnimationState::Idle) == AnimationState::Death) {
+        return;
+    }
+
+    if (entity->getEntityType() == EntityType::Sun) {
+        return;
+    }
+
+    if (entity->graphicsEffect()) {
+        return;
+    }
+
     auto* effect = new QGraphicsOpacityEffect();
     entity->setGraphicsEffect(effect);
 
-    auto* fadeOut = new QPropertyAnimation(effect, "opacity", this);
-    fadeOut->setDuration(100);
+    auto* fadeOut = new QPropertyAnimation(effect, "opacity");
+    fadeOut->setDuration(80);
     fadeOut->setStartValue(1.0);
     fadeOut->setEndValue(0.35);
 
-    auto* fadeIn = new QPropertyAnimation(effect, "opacity", this);
-    fadeIn->setDuration(100);
+    auto* fadeIn = new QPropertyAnimation(effect, "opacity");
+    fadeIn->setDuration(120);
     fadeIn->setStartValue(0.35);
     fadeIn->setEndValue(1.0);
 
@@ -171,14 +278,18 @@ void AnimationManager::playHitEffect(GameEntity* entity)
     group->addAnimation(fadeIn);
 
     QPointer<GameEntity> safeEntity(entity);
+    QPointer<QGraphicsOpacityEffect> safeEffect(effect);
 
-    connect(group, &QSequentialAnimationGroup::finished, this, [safeEntity, effect, group]() {
-        if (safeEntity) {
-            safeEntity->setGraphicsEffect(nullptr);
-        }
+    connect(group, &QSequentialAnimationGroup::finished, this,
+        [this, safeEntity, safeEffect, group]() {
+            if (safeEntity &&
+                safeEffect &&
+                currentStates.value(safeEntity.data(), AnimationState::Idle) != AnimationState::Death &&
+                safeEntity->graphicsEffect() == safeEffect.data()) {
+                safeEntity->setGraphicsEffect(nullptr);
+            }
 
-        effect->deleteLater();
-        group->deleteLater();
+            group->deleteLater();
         });
 
     group->start();
@@ -190,11 +301,18 @@ void AnimationManager::playDeathEffect(GameEntity* entity)
         return;
     }
 
+    if (entity->scene()) {
+        lastKnownScene = entity->scene();
+    }
+
+    if (currentStates.value(entity, AnimationState::Idle) == AnimationState::Death) {
+        return;
+    }
+
     currentStates[entity] = AnimationState::Death;
 
     if (animations.contains(entity)) {
         auto& table = animations[entity];
-
         for (SpriteAnimation* animation : table) {
             if (animation) {
                 animation->stop();
@@ -202,8 +320,14 @@ void AnimationManager::playDeathEffect(GameEntity* entity)
         }
     }
 
-    auto* effect = new QGraphicsOpacityEffect();
-    entity->setGraphicsEffect(effect);
+    auto* effect = qobject_cast<QGraphicsOpacityEffect*>(entity->graphicsEffect());
+    if (!effect) {
+        entity->setGraphicsEffect(nullptr);
+        effect = new QGraphicsOpacityEffect();
+        entity->setGraphicsEffect(effect);
+    }
+
+    effect->setOpacity(1.0);
 
     auto* animation = new QPropertyAnimation(effect, "opacity", this);
     animation->setDuration(500);
@@ -212,15 +336,19 @@ void AnimationManager::playDeathEffect(GameEntity* entity)
     animation->setEasingCurve(QEasingCurve::OutQuad);
 
     QPointer<GameEntity> safeEntity(entity);
+    QPointer<QGraphicsOpacityEffect> safeEffect(effect);
 
-    connect(animation, &QPropertyAnimation::finished, this, [this, safeEntity, effect, animation]() {
-        if (safeEntity) {
-            safeEntity->setGraphicsEffect(nullptr);
-            emit deathAnimationFinished(safeEntity.data());
-        }
+    connect(animation, &QPropertyAnimation::finished, this,
+        [this, safeEntity, safeEffect, animation]() {
+            if (safeEntity) {
+                if (safeEffect && safeEntity->graphicsEffect() == safeEffect.data()) {
+                    safeEntity->setGraphicsEffect(nullptr);
+                }
 
-        effect->deleteLater();
-        animation->deleteLater();
+                emit deathAnimationFinished(safeEntity.data());
+            }
+
+            animation->deleteLater();
         });
 
     animation->start();
@@ -292,6 +420,10 @@ void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF en
         lastKnownScene = sun->scene();
     }
 
+    if (!animations.contains(sun)) {
+        bindEntity(sun);
+    }
+
     stopSunMotionAnimation(sun);
 
     currentStates[sun] = AnimationState::Spawn;
@@ -310,16 +442,17 @@ void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF en
 
     QPointer<Sun> safeSun(sun);
 
-    connect(animation, &QPropertyAnimation::finished, this, [this, safeSun, animation]() {
-        if (safeSun && sunMotionAnimations.value(safeSun.data()) == animation) {
-            sunMotionAnimations.remove(safeSun.data());
-        }
+    connect(animation, &QPropertyAnimation::finished, this,
+        [this, safeSun, animation]() {
+            if (safeSun && sunMotionAnimations.value(safeSun.data()) == animation) {
+                sunMotionAnimations.remove(safeSun.data());
+            }
 
-        animation->deleteLater();
+            animation->deleteLater();
 
-        if (safeSun && safeSun->isAlive()) {
-            playSunIdleAnimation(safeSun.data());
-        }
+            if (safeSun && safeSun->isAlive()) {
+                playSunIdleAnimation(safeSun.data());
+            }
         });
 
     animation->start();
@@ -351,28 +484,40 @@ void AnimationManager::playSunIdleAnimation(Sun* sun)
         bindEntity(sun);
     }
 
-    // 启动阳光序列帧 Idle。
+    stopSunMotionAnimation(sun);
+
     auto& table = animations[sun];
-    if (table.contains(AnimationState::Idle) && table[AnimationState::Idle]) {
-        table[AnimationState::Idle]->start();
+    SpriteAnimation* idleAnimation = table.value(AnimationState::Idle, nullptr);
+
+    if (idleAnimation && !idleAnimation->isRunning()) {
+        idleAnimation->reset();
+        idleAnimation->start();
     }
 
     currentStates[sun] = AnimationState::Idle;
 
-    stopSunMotionAnimation(sun);
-
     const QPointF basePos = sun->pos();
+    const QPointF upPos = basePos + QPointF(0, -10);
 
-    auto* floatAnimation = new QPropertyAnimation(sun, "pos", this);
-    floatAnimation->setDuration(1000);
-    floatAnimation->setStartValue(basePos);
-    floatAnimation->setEndValue(basePos + QPointF(0, -10));
-    floatAnimation->setEasingCurve(QEasingCurve::InOutSine);
-    floatAnimation->setLoopCount(-1);
+    auto* upAnimation = new QPropertyAnimation(sun, "pos");
+    upAnimation->setDuration(1000);
+    upAnimation->setStartValue(basePos);
+    upAnimation->setEndValue(upPos);
+    upAnimation->setEasingCurve(QEasingCurve::InOutSine);
 
-    sunMotionAnimations.insert(sun, floatAnimation);
+    auto* downAnimation = new QPropertyAnimation(sun, "pos");
+    downAnimation->setDuration(1000);
+    downAnimation->setStartValue(upPos);
+    downAnimation->setEndValue(basePos);
+    downAnimation->setEasingCurve(QEasingCurve::InOutSine);
 
-    floatAnimation->start();
+    auto* floatGroup = new QSequentialAnimationGroup(this);
+    floatGroup->addAnimation(upAnimation);
+    floatGroup->addAnimation(downAnimation);
+    floatGroup->setLoopCount(-1);
+
+    sunMotionAnimations.insert(sun, floatGroup);
+    floatGroup->start();
 }
 
 void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
@@ -387,7 +532,6 @@ void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
 
     if (animations.contains(sun)) {
         auto& table = animations[sun];
-
         for (SpriteAnimation* animation : table) {
             if (animation) {
                 animation->stop();
@@ -420,21 +564,24 @@ void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
     sunMotionAnimations.insert(sun, group);
 
     QPointer<Sun> safeSun(sun);
+    QPointer<QGraphicsOpacityEffect> safeEffect(opacityEffect);
 
-    connect(group, &QParallelAnimationGroup::finished, this, [this, safeSun, opacityEffect, group]() {
-        if (safeSun && sunMotionAnimations.value(safeSun.data()) == group) {
-            sunMotionAnimations.remove(safeSun.data());
-        }
+    connect(group, &QParallelAnimationGroup::finished, this,
+        [this, safeSun, safeEffect, group]() {
+            if (safeSun && sunMotionAnimations.value(safeSun.data()) == group) {
+                sunMotionAnimations.remove(safeSun.data());
+            }
 
-        if (safeSun) {
-            safeSun->setGraphicsEffect(nullptr);
-            safeSun->setVisible(false);
+            if (safeSun) {
+                if (safeEffect && safeSun->graphicsEffect() == safeEffect.data()) {
+                    safeSun->setGraphicsEffect(nullptr);
+                }
 
-            emit sunCollectAnimationFinished(safeSun.data());
-        }
+                safeSun->setVisible(false);
+                emit sunCollectAnimationFinished(safeSun.data());
+            }
 
-        opacityEffect->deleteLater();
-        group->deleteLater();
+            group->deleteLater();
         });
 
     group->start();
@@ -451,8 +598,16 @@ void AnimationManager::setupPlantAnimations(Plant* plant)
         return;
     }
 
+    const QString folder = plantFolderFor(plant);
+
     QVector<QPixmap> idleFrames =
-        ResourceManager::loadFrames(":/images/plants/shooter", "idle", 3);
+        ResourceManager::loadFrames(folder, "idle", 3);
+
+    QVector<QPixmap> attackFrames =
+        ResourceManager::loadFrames(folder, "attack", 3);
+
+    QVector<QPixmap> produceFrames =
+        ResourceManager::loadFrames(folder, "produce", 2);
 
     addSpriteAnimation(
         plant,
@@ -460,6 +615,22 @@ void AnimationManager::setupPlantAnimations(Plant* plant)
         idleFrames,
         180,
         true
+    );
+
+    addSpriteAnimation(
+        plant,
+        AnimationState::Attack,
+        attackFrames,
+        110,
+        false
+    );
+
+    addSpriteAnimation(
+        plant,
+        AnimationState::Produce,
+        produceFrames,
+        140,
+        false
     );
 
     if (!idleFrames.isEmpty()) {
@@ -479,14 +650,27 @@ void AnimationManager::setupZombieAnimations(Zombie* zombie)
         return;
     }
 
+    const QString folder = zombieFolderFor(zombie);
+
     QVector<QPixmap> walkFrames =
-        ResourceManager::loadFrames(":/images/zombies/normal", "walk", 4);
+        ResourceManager::loadFrames(folder, "walk", 4);
+
+    QVector<QPixmap> attackFrames =
+        ResourceManager::loadFrames(folder, "attack", 3);
 
     addSpriteAnimation(
         zombie,
         AnimationState::Walk,
         walkFrames,
         160,
+        true
+    );
+
+    addSpriteAnimation(
+        zombie,
+        AnimationState::Attack,
+        attackFrames,
+        140,
         true
     );
 
@@ -507,8 +691,6 @@ void AnimationManager::setupBulletAnimations(Bullet* bullet)
         return;
     }
 
-    // Prompt 中 Bullet::Move 的简易版本允许使用单张 pea.png。
-    // 子弹坐标移动仍由 Bullet::updateEntity() 负责，动画层只设置贴图和图层。
     QPixmap pixmap = ResourceManager::loadPixmap(":/images/bullets/pea.png");
 
     bullet->setPixmap(pixmap);
@@ -516,8 +698,8 @@ void AnimationManager::setupBulletAnimations(Bullet* bullet)
         -pixmap.width() / 2.0,
         -pixmap.height() / 2.0
     );
-
     bullet->setZValue(BulletLayer);
+
     currentStates[bullet] = AnimationState::Move;
 }
 
@@ -570,18 +752,23 @@ void AnimationManager::addSpriteAnimation(
     if (!loop) {
         QPointer<GameEntity> safeEntity(entity);
 
-        connect(animation, &SpriteAnimation::finished, this, [this, safeEntity, state]() {
-            if (!safeEntity) {
-                return;
-            }
+        connect(animation, &SpriteAnimation::finished, this,
+            [this, safeEntity, state]() {
+                if (!safeEntity) {
+                    return;
+                }
 
-            if (state == AnimationState::Death) {
-                emit deathAnimationFinished(safeEntity.data());
-                return;
-            }
+                if (currentStates.value(safeEntity.data(), AnimationState::Idle) != state) {
+                    return;
+                }
 
-            currentStates[safeEntity.data()] = AnimationState::Idle;
-            playAnimation(safeEntity.data(), AnimationState::Idle);
+                if (state == AnimationState::Death) {
+                    emit deathAnimationFinished(safeEntity.data());
+                    return;
+                }
+
+                currentStates[safeEntity.data()] = AnimationState::Idle;
+                playAnimation(safeEntity.data(), AnimationState::Idle);
             });
     }
 }
@@ -621,7 +808,6 @@ void AnimationManager::stopSunMotionAnimation(Sun* sun)
     }
 
     QAbstractAnimation* oldAnimation = sunMotionAnimations.take(sun);
-
     if (oldAnimation) {
         oldAnimation->stop();
         oldAnimation->deleteLater();
@@ -630,8 +816,5 @@ void AnimationManager::stopSunMotionAnimation(Sun* sun)
 
 QPointF AnimationManager::defaultSunCollectTarget() const
 {
-    // 当前仓库的 GameEngine::sunCollected 只有 Sun*，没有 SunDisplay 坐标。
-    // 因此这里给一个左上角默认目标点。
-    // 如果 UI 层能提供 SunDisplay 的 scene 坐标，应调用双参数版本。
     return QPointF(80.0, 40.0);
 }
