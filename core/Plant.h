@@ -19,4 +19,6 @@ public:
     bool canAttack(const QList<class Zombie*>& zombies) const;
     bool readyToAttack() const;
     class Bullet* createBullet();
+    QString getPlantType() const { return plantType; }
+    int getCost() const { return cost; }
 };

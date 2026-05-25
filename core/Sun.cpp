@@ -15,14 +15,12 @@ void Sun::collect()
     if (!collected)
     {
         collected = true;
-        alive = false;
     }
 }
 
 void Sun::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     Q_UNUSED(event);
-    qDebug()<<"Sun clicked!";
     if (!collected)
         emit clicked(this);
 }

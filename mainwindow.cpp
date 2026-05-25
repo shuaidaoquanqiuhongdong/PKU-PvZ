@@ -88,12 +88,17 @@ void MainWindow::startGame()
     connect(gameEngine, &GameEngine::bulletHit,
             animationManager, &AnimationManager::playBulletHitEffect);
     // 阳光收集动画暂时绕过（动画内部有bug待修）
-    // connect(gameEngine, &GameEngine::sunCollected,
-    //         animationManager, qOverload<Sun*>(&AnimationManager::playSunCollectAnimation));
+    connect(gameEngine, &GameEngine::sunCollected,
+            animationManager, qOverload<Sun*>(&AnimationManager::playSunCollectAnimation));
 
     // 动画 → 引擎：死亡动画播完安全删除
     connect(animationManager, &AnimationManager::deathAnimationFinished,
             gameEngine, &GameEngine::removeEntitySafely);
+    // 动画 → 引擎：阳光收集动画播完标记死亡
+    connect(animationManager, &AnimationManager::sunCollectAnimationFinished,
+            gameEngine, [](Sun* sun) {
+                if (sun) sun->die();
+            });
 
     // 引擎 → 主窗口：游戏结束
     connect(gameEngine, &GameEngine::gameOver,
