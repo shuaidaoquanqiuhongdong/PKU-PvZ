@@ -37,3 +37,8 @@ Bullet* Plant::createBullet()
     b->setPos(pos() + QPointF(35, -10));
     return b;
 }
+
+QString Plant::getPlantType() const
+{
+    return plantType;
+}
