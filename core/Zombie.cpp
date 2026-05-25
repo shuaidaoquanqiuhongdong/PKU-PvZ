@@ -21,27 +21,17 @@ void Zombie::moveLeft()
 
 void Zombie::updateEntity()
 {
-    if (attacking && targetPlant)
-    {
-        if (attackTimer.elapsed() >= attackInterval)
-        {
-            targetPlant->takeDamage(attackDamage);
-            attackTimer.start();
-            if (!targetPlant->isAlive())
-            {
-                stopAttack();
-            }
-        }
-    }
-    else
-    {
+    if (!attacking)
         moveLeft();
-    }
 }
 
 GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, 300, 1) {}
 
 GenziZombie::~GenziZombie() {}
+
+DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, 200, 2) {}
+
+DancingZombie::~DancingZombie() {}
 
 void Zombie::startAttack(Plant* plant)
 {
@@ -64,3 +54,15 @@ bool Zombie::reachedHome() const
 {
     return pos().x() <= 0;
 }
+
+bool Zombie::readyToDealDamage() const
+{
+    return attackTimer.elapsed() >= attackInterval;
+}
+
+void Zombie::resetAttackTimer()
+{
+    attackTimer.start();
+}
+
+int Zombie::getAttackDamage() const { return attackDamage; }

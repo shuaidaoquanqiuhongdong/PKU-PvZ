@@ -23,6 +23,9 @@ public:
     bool isAttacking() const;
     Plant* getTargetPlant() const;
     bool reachedHome() const;
+    bool readyToDealDamage() const;
+    void resetAttackTimer();
+    int getAttackDamage() const;
 };
 
 class GenziZombie : public Zombie
@@ -30,4 +33,11 @@ class GenziZombie : public Zombie
 public:
     GenziZombie(int row_, int col_);
     ~GenziZombie();
+};
+
+class DancingZombie : public Zombie
+{
+public:
+    DancingZombie(int row_, int col_);
+    ~DancingZombie();
 };

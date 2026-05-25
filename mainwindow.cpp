@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <QAudioOutput>
 #include "ui/MainMenuWidget.h"
 #include "ui/GamePageWidget.h"
 #include "ui/GameOverWidget.h"
@@ -11,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     , animationManager(nullptr)
     , gamePageWidget(nullptr)
     , gameOverWidget(nullptr)
-    , zombieSpawnTimer(nullptr)
+    , bgmPlayer(nullptr)
 {
     setWindowTitle("PvZLiteQt - 植物大战僵尸");
     setFixedSize(1408, 888);  // 768 + TopBar 50 + CardPanel 70
@@ -110,31 +111,21 @@ void MainWindow::startGame()
     connect(gameOverWidget, &GameOverWidget::mainMenuClicked,
             this, &MainWindow::goToMainMenu);
 
-    // 暂停按钮
+    // 暂停/恢复按钮
     connect(topBar, &TopBarWidget::pauseClicked, this, [=]() {
-        // 暂停功能由 Core 组后续实现
+        if (!gameEngine) return;
+        if (paused)
+            gameEngine->resume();
+        else
+            gameEngine->pause();
+        paused = !paused;
     });
-
-    // 每 6 秒生成一个僵尸
-    zombieSpawnTimer = new QTimer(this);
-    connect(zombieSpawnTimer, &QTimer::timeout, this, [=]() {
-        static int totalSpawned = 0;
-        if (totalSpawned >= 10) return;
-        int row = totalSpawned % 5;
-        auto* zombie = new GenziZombie(row, 8);
-        zombie->setPos(gameView->cellToScenePos(row, 8));
-        gameEngine->addZombie(zombie);
-        gameView->addEntityItem(zombie);
-        animationManager->bindEntity(zombie);
-        animationManager->playAnimation(zombie, AnimationState::Walk);
-        totalSpawned++;
-    });
-    zombieSpawnTimer->start(6000);
 
     // 初始化卡片
-    cardPanel->addPlantCard("Shooter",     "射手",       100, "");
-    cardPanel->addPlantCard("SunProducer", "阳光生产者",  50,  "");
-    cardPanel->addPlantCard("Wall",        "坚果墙",      50,  "");
+    cardPanel->addPlantCard("Firefan",      "不知火蛙",   100, "");
+    cardPanel->addPlantCard("Kimsunflower", "金日葵",     50,  "");
+    cardPanel->addPlantCard("Bengbear",     "熊绷果",     50,  "");
+    cardPanel->addPlantCard("Rainchili",    "带派辣椒",   125, "");
 
     // 初始化场景
     gameView->initScene();
@@ -142,6 +133,16 @@ void MainWindow::startGame()
 
     stackedWidget->setCurrentWidget(gamePageWidget);
     gameEngine->start();
+
+    // 背景音乐
+    bgmPlayer = new QMediaPlayer(this);
+    auto* audioOutput = new QAudioOutput(this);
+    bgmPlayer->setAudioOutput(audioOutput);
+    bgmPlayer->setSource(QUrl::fromLocalFile(
+        QString(PROJECT_SOURCE_DIR) + "/resources/bgm.mp3"));
+    bgmPlayer->setLoops(QMediaPlayer::Infinite);
+    audioOutput->setVolume(0.5);
+    bgmPlayer->play();
 }
 
 void MainWindow::showGameOver(bool win)
@@ -165,10 +166,10 @@ void MainWindow::goToMainMenu()
 
 void MainWindow::clearGame()
 {
-    if (zombieSpawnTimer) {
-        zombieSpawnTimer->stop();
-        zombieSpawnTimer->deleteLater();
-        zombieSpawnTimer = nullptr;
+    if (bgmPlayer) {
+        bgmPlayer->stop();
+        bgmPlayer->deleteLater();
+        bgmPlayer = nullptr;
     }
     if (gameEngine) {
         gameEngine->deleteLater();

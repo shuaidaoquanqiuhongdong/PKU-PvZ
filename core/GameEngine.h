@@ -19,18 +19,29 @@ private:
     int sunValue;
     QList<Sun*> suns;
     QTimer* sunGenerateTimer;
+    QTimer* zombieSpawnTimer;
+    int spawnedZombieCount;
+    int maxZombieCount;
+    bool running;
+
 public:
     GameEngine();
     void addPlant(Plant* plant);
     void addZombie(Zombie* zombie);
     void updateGame();
     void start();
+    void pause();
+    void resume();
+    void stop();
     bool placePlant(QString plantType, int row, int col);
     void checkPlantAttack();
+    void checkSunProduction();
+    void checkRainchiliFuse();
     void updateBullets();
     void checkCollisions();
     void cleanupDeadEntities();
     void generateSun();
+    void spawnZombie();
     void collectSun(Sun* sun);
     void checkZombieAttackPlant();
     void checkGameResult();

@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QStackedWidget>
 #include <QTimer>
+#include <QMediaPlayer>
 
 class MainMenuWidget;
 class GamePageWidget;
@@ -33,7 +34,8 @@ private:
     GameOverWidget* gameOverWidget;
     GameEngine* gameEngine;
     AnimationManager* animationManager;
-    QTimer* zombieSpawnTimer;
+    QMediaPlayer* bgmPlayer;
+    bool paused = false;
 };
 
 #endif

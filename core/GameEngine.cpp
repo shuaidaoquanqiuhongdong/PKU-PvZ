@@ -11,7 +11,12 @@ GameEngine::GameEngine()
     connect(gameLoopTimer, &QTimer::timeout, this, &GameEngine::updateGame);
     sunValue=GameConfig::InitialSun;// 150
     sunGenerateTimer = new QTimer(this);
-    connect(sunGenerateTimer, &QTimer::timeout,this,&GameEngine::generateSun);
+    connect(sunGenerateTimer, &QTimer::timeout, this, &GameEngine::generateSun);
+
+    zombieSpawnTimer = new QTimer(this);
+    connect(zombieSpawnTimer, &QTimer::timeout, this, &GameEngine::spawnZombie);
+    spawnedZombieCount = 0;
+    maxZombieCount = 10;
 }
 
 void GameEngine::addPlant(Plant* plant)
@@ -26,7 +31,9 @@ void GameEngine::addZombie(Zombie* zombie)
 
 void GameEngine::updateGame()
 {
-    checkPlantAttack();// 先：植物攻击
+    checkPlantAttack();
+    checkSunProduction();
+    checkRainchiliFuse();
     checkZombieAttackPlant();
     checkCollisions();
     for (auto* zombie : zombies)
@@ -38,22 +45,75 @@ void GameEngine::updateGame()
 
 void GameEngine::start()
 {
+    running = true;
     gameLoopTimer->start(GameConfig::GameLoopInterval);
     sunGenerateTimer->start(GameConfig::SunGenerateInterval);
+    zombieSpawnTimer->start(GameConfig::ZombieSpawnInterval);
+}
+
+void GameEngine::pause()
+{
+    if (!running) return;
+    running = false;
+    gameLoopTimer->stop();
+    sunGenerateTimer->stop();
+    zombieSpawnTimer->stop();
+}
+
+void GameEngine::resume()
+{
+    if (running) return;
+    running = true;
+    gameLoopTimer->start();
+    sunGenerateTimer->start();
+    zombieSpawnTimer->start();
+}
+
+void GameEngine::stop()
+{
+    running = false;
+    gameLoopTimer->stop();
+    sunGenerateTimer->stop();
+    zombieSpawnTimer->stop();
 }
 
 bool GameEngine::placePlant(QString plantType, int row, int col)
 {
+    if (!running) return false;
     if (!gridManager->isCellEmpty(row, col))
-    {
         return false;
-    }
-    Plant* plant = new Plant(row, col, 300, 0, plantType);
+
+    int cost = GameConfig::getPlantCost(plantType);
+    if (sunValue < cost)
+        return false;
+
+    Plant* plant = nullptr;
+    if (plantType == "Firefan")
+        plant = new Firefan(row, col);
+    else if (plantType == "Bengbear")
+        plant = new Bengbear(row, col);
+    else if (plantType == "Kimsunflower")
+        plant = new Kimsunflower(row, col);
+    else if (plantType == "Rainchili")
+        plant = new Rainchili(row, col);
+    else
+        return false;
+
+    sunValue -= cost;
     QPointF pos = gridManager->cellToScenePos(row, col);
     plant->setPos(pos);
     plants.append(plant);
     gridManager->placePlant(plant, row, col);
+    emit sunChanged(sunValue);
     emit entityCreated(plant);
+
+    // Rainchili：种下后蓄力，由 checkRainchiliFuse 延时引爆
+    if (plantType == "Rainchili")
+    {
+        static_cast<Rainchili*>(plant)->startFuse();
+        emit entityAnimationChanged(plant, AnimationState::Produce);
+    }
+
     return true;
 }
 
@@ -62,10 +122,14 @@ void GameEngine::checkPlantAttack()
     for (auto* plant : plants)
     {
         if (!plant->isAlive()) continue;
-        if (plant->canAttack(zombies) && plant->readyToAttack())
+        if (!plant->canAttack(zombies) || !plant->readyToAttack())
+            continue;
+
+        emit entityAnimationChanged(plant, AnimationState::Attack);
+
+        Bullet* b = plant->createBullet();
+        if (b)
         {
-            emit entityAnimationChanged(plant, AnimationState::Attack);
-            Bullet* b = plant->createBullet();
             bullets.append(b);
             emit entityCreated(b);
         }
@@ -80,6 +144,53 @@ void GameEngine::updateBullets()
         {
             bullet->updateEntity();
         }
+    }
+}
+
+void GameEngine::checkSunProduction()
+{
+    for (auto* plant : plants)
+    {
+        if (!plant->isAlive()) continue;
+        if (plant->readyToProduceSun())
+        {
+            emit entityAnimationChanged(plant, AnimationState::Produce);
+            Sun* s = plant->createSun();
+            if (s)
+            {
+                suns.append(s);
+                emit entityCreated(s);
+                connect(s, &Sun::clicked, this, &GameEngine::collectSun);
+            }
+        }
+    }
+}
+
+void GameEngine::checkRainchiliFuse()
+{
+    for (auto* plant : plants)
+    {
+        if (!plant->isAlive()) continue;
+        if (plant->getPlantType() != "Rainchili") continue;
+
+        auto* chili = static_cast<Rainchili*>(plant);
+        if (!chili->readyToExplode()) continue;
+
+        emit entityAnimationChanged(plant, AnimationState::Attack);
+
+        for (auto* z : zombies)
+        {
+            if (z->isAlive() && z->getRow() == plant->getRow())
+            {
+                z->takeDamage(9999);
+                if (!z->isAlive())
+                    emit entityDied(z);
+            }
+        }
+
+        plant->takeDamage(9999);
+        if (!plant->isAlive())
+            emit entityDied(plant);
     }
 }
 
@@ -158,9 +269,38 @@ void GameEngine::generateSun()
     connect(sun, &Sun::clicked, this, &GameEngine::collectSun);
 }
 
+void GameEngine::spawnZombie()
+{
+    if (spawnedZombieCount >= maxZombieCount)
+        return;
+
+    int row = rand() % GameConfig::Rows;
+
+    Zombie* zombie = nullptr;
+    if (spawnedZombieCount < 5)
+        zombie = new GenziZombie(row, GameConfig::Cols - 1);
+    else
+        zombie = (rand() % 2 == 0)
+                     ? static_cast<Zombie*>(new GenziZombie(row, GameConfig::Cols - 1))
+                     : static_cast<Zombie*>(new DancingZombie(row, GameConfig::Cols - 1));
+
+    QPointF pos = gridManager->cellToScenePos(row, GameConfig::Cols - 1);
+    zombie->setPos(pos);
+    zombies.append(zombie);
+    spawnedZombieCount++;
+
+    emit entityCreated(zombie);
+    emit entityAnimationChanged(zombie, AnimationState::Walk);
+
+    // 渐进加速：初始10s，每生一只缩短300ms，最快3s
+    int newInterval = qMax(3000, GameConfig::ZombieSpawnInterval - spawnedZombieCount * 300);
+    zombieSpawnTimer->setInterval(newInterval);
+}
+
 void GameEngine::collectSun(Sun* sun)
 {
     if(!sun || !sun->isAlive()) return;
+    if(!running) return;
     sunValue += sun->getValue();
     sun->collect();
     emit sunChanged(sunValue);
@@ -204,6 +344,18 @@ void GameEngine::checkZombieAttackPlant()
                     zombie->startAttack(plantAhead);
                     emit entityAnimationChanged(zombie, AnimationState::Attack);
                 }
+
+                if (zombie->isAttacking() && zombie->readyToDealDamage())
+                {
+                    zombie->resetAttackTimer();
+                    plantAhead->takeDamage(zombie->getAttackDamage());
+                    if (!plantAhead->isAlive())
+                    {
+                        emit entityDied(plantAhead);
+                        zombie->stopAttack();
+                        emit entityAnimationChanged(zombie, AnimationState::Walk);
+                    }
+                }
             }
         }
         else
@@ -232,7 +384,7 @@ void GameEngine::checkGameResult()
     {
         if (z->isAlive()) { allDead = false; break; }
     }
-    if (allDead && !zombies.isEmpty())
+    if (allDead && spawnedZombieCount >= maxZombieCount)
     {
         emit gameOver(true);
     }
