@@ -29,7 +29,7 @@ void GameView::drawBackground()
 {
     scene->setBackgroundBrush(QColor("#4a7c2e"));
 
-    QString imagePath = QString(PROJECT_SOURCE_DIR) + "/resources/images/background/lawn.png";
+    QString imagePath = QString(PROJECT_SOURCE_DIR) + "/resources/images/other/lawn.png";
     QPixmap bg(imagePath);
     if (!bg.isNull()) {
         auto* bgItem = scene->addPixmap(bg);

@@ -37,7 +37,19 @@ public:
 
 class DancingZombie : public Zombie
 {
+protected:
+    int spawnInterval = 8000;
+    QElapsedTimer spawnTimer;
 public:
     DancingZombie(int row_, int col_);
     ~DancingZombie();
+    bool readyToSpawn() const;
+    void resetSpawnTimer();
+};
+
+class DancerZombie : public Zombie
+{
+public:
+    DancerZombie(int row_, int col_);
+    ~DancerZombie();
 };
