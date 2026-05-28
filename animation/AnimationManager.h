@@ -103,6 +103,7 @@ private:
         int interval,
         bool loop
     );
+    void stopEntitySpriteAnimations(GameEntity* entity);
 
     void stopSunMotionAnimation(Sun* sun);
     QPointF defaultSunCollectTarget() const;
