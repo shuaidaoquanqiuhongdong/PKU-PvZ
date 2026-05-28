@@ -29,7 +29,10 @@ GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, 300, 1) {}
 
 GenziZombie::~GenziZombie() {}
 
-DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, 200, 2) {}
+DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, 200, 2)
+{
+    spawnTimer.start();
+}
 
 DancingZombie::~DancingZombie() {}
 
@@ -66,3 +69,14 @@ void Zombie::resetAttackTimer()
 }
 
 int Zombie::getAttackDamage() const { return attackDamage; }
+
+bool DancingZombie::readyToSpawn() const
+{
+    return spawnTimer.elapsed() >= spawnInterval;
+}
+
+void DancingZombie::resetSpawnTimer() { spawnTimer.start(); }
+
+DancerZombie::DancerZombie(int row_, int col_) : Zombie(row_, col_, 100, 2) {}
+
+DancerZombie::~DancerZombie() {}
