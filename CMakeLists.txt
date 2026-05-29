@@ -13,12 +13,14 @@ file(GLOB_RECURSE SOURCES
     ui/*.cpp ui/*.h
 )
 
+qt_add_resources(PvZLiteQt_RESOURCES resources/resources.qrc)
+
 qt_add_executable(PvZLiteQt
     WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp
     mainwindow.h
-    resources/resources.qrc
+    ${PvZLiteQt_RESOURCES}
     ${SOURCES}
 )
 
