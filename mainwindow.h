@@ -36,6 +36,7 @@ private:
     AnimationManager* animationManager;
     QMediaPlayer* bgmPlayer;
     bool paused = false;
+    qreal scaleFactor = 1.0;
 };
 
 #endif

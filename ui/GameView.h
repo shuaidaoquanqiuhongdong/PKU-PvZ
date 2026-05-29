@@ -12,6 +12,7 @@ class GameView : public QGraphicsView
     Q_OBJECT
 public:
     explicit GameView(QWidget *parent = nullptr);
+    void applyScale(qreal scale);
     void initScene();
     void drawBackground();
     void drawGrid();

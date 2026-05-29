@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include <QAudioOutput>
+#include <QGuiApplication>
+#include <QScreen>
 #include "ui/MainMenuWidget.h"
 #include "ui/GamePageWidget.h"
 #include "ui/GameOverWidget.h"
@@ -15,7 +17,23 @@ MainWindow::MainWindow(QWidget *parent)
     , bgmPlayer(nullptr)
 {
     setWindowTitle("PvZLiteQt - 植物大战僵尸");
-    setFixedSize(1408, 888);  // 768 + TopBar 50 + CardPanel 70
+
+    // 根据屏幕大小计算缩放比例
+    constexpr int BaseW = 1408;
+    constexpr int BaseH = 888;
+    QScreen* screen = QGuiApplication::primaryScreen();
+    if (screen)
+    {
+        QRect geom = screen->availableGeometry();
+        qreal sw = static_cast<qreal>(geom.width()) / BaseW;
+        qreal sh = static_cast<qreal>(geom.height()) / BaseH;
+        scaleFactor = qMin(sw, sh);
+        if (scaleFactor > 1.0) scaleFactor = 1.0;
+        if (scaleFactor < 0.5) scaleFactor = 0.5;
+    }
+
+    setFixedSize(static_cast<int>(BaseW * scaleFactor),
+                 static_cast<int>(BaseH * scaleFactor));
 
     stackedWidget = new QStackedWidget(this);
     setCentralWidget(stackedWidget);
@@ -80,6 +98,8 @@ void MainWindow::startGame()
             topBar, &TopBarWidget::setSunValue);
     connect(gameEngine, &GameEngine::sunChanged,
             cardPanel, &CardPanel::updateCardState);
+    connect(gameEngine, &GameEngine::waveChanged,
+            topBar, &TopBarWidget::setWaveInfo);
 
     // 引擎 → 动画：攻击/状态变化
     connect(gameEngine, &GameEngine::entityAnimationChanged,
@@ -129,6 +149,14 @@ void MainWindow::startGame()
     cardPanel->addPlantCard("Kimsunflower", "金日葵",     50,  "");
     cardPanel->addPlantCard("Bengbear",     "熊绷果",     50,  "");
     cardPanel->addPlantCard("Rainchili",    "带派辣椒",   125, "");
+
+    // 应用屏幕缩放
+    if (!qFuzzyCompare(scaleFactor, 1.0))
+    {
+        gameView->applyScale(scaleFactor);
+        topBar->setFixedHeight(static_cast<int>(50 * scaleFactor));
+        cardPanel->setFixedHeight(static_cast<int>(70 * scaleFactor));
+    }
 
     // 初始化场景
     gameView->initScene();

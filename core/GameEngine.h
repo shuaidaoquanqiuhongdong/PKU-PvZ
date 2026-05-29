@@ -23,6 +23,10 @@ private:
     int spawnedZombieCount;
     int maxZombieCount;
     bool running;
+    int currentWave;
+    int totalWave;
+    int zombiesInCurrentWave;
+    bool waveCleared;
 
 public:
     GameEngine();
@@ -37,7 +41,7 @@ public:
     void checkPlantAttack();
     void checkSunProduction();
     void checkRainchiliFuse();
-    void checkDancingZombieSpawn();
+    void onDancingZombieSpawn(DancingZombie* dancing);
     void updateBullets();
     void checkCollisions();
     void cleanupDeadEntities();
@@ -46,9 +50,12 @@ public:
     void collectSun(Sun* sun);
     void checkZombieAttackPlant();
     void checkGameResult();
+    void checkWaveTransition();
+    void startNextWave();
     void removeEntitySafely(GameEntity* entity);
 signals:
     void sunChanged(int value);
+    void waveChanged(int currentWave, int totalWave);
     void entityCreated(GameEntity* entity);
     void entityDied(GameEntity* entity);
     void gameOver(bool win);

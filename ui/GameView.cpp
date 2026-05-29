@@ -16,6 +16,17 @@ GameView::GameView(QWidget *parent)
     setFixedSize(GameConfig::SceneWidth, GameConfig::SceneHeight);
 }
 
+void GameView::applyScale(qreal scale)
+{
+    if (qFuzzyCompare(scale, 1.0))
+        return;
+
+    int w = static_cast<int>(GameConfig::SceneWidth * scale);
+    int h = static_cast<int>(GameConfig::SceneHeight * scale);
+    setFixedSize(w, h);
+    setTransform(QTransform::fromScale(scale, scale));
+}
+
 void GameView::initScene()
 {
     scene = new QGraphicsScene(this);

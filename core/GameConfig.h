@@ -19,7 +19,7 @@ namespace GameConfig
     // --- 定时器间隔设置 (毫秒) ---
     inline constexpr int GameLoopInterval = 33;      // 游戏主循环刷新时间 (约30帧/秒)
     inline constexpr int ZombieSpawnInterval = 10000; // 刷僵尸的初始间隔 (10秒)
-    inline constexpr int SunGenerateInterval = 8000; // 刷系统阳光的间隔 (8秒)
+    inline constexpr int SunGenerateInterval = 11000; // 刷系统阳光的间隔 (11秒)
 
     // --- 植物属性 ---
     inline constexpr int FirefanCost = 100;
@@ -32,7 +32,7 @@ namespace GameConfig
 
     inline constexpr int KimsunflowerCost = 50;
     inline constexpr int KimsunflowerHp = 200;
-    inline constexpr int KimsunflowerProduceInterval = 8000;
+    inline constexpr int KimsunflowerProduceInterval = 12000;
 
     inline constexpr int RainchiliCost = 125;
     inline constexpr int RainchiliHp = 1;
@@ -46,11 +46,11 @@ namespace GameConfig
     inline constexpr int GenziZombieSpeed = 1;
 
     inline constexpr int DancingZombieHp = 200;
-    inline constexpr int DancingZombieSpeed = 2;
-    inline constexpr int DancingZombieSpawnInterval = 8000;
+    inline constexpr int DancingZombieSpeed = 1;
+    inline constexpr int DancingZombieSpawnInterval = 5000;
 
     inline constexpr int DancerZombieHp = 100;
-    inline constexpr int DancerZombieSpeed = 2;
+    inline constexpr int DancerZombieSpeed = 1;
 
     // --- 子弹属性 ---
     inline constexpr int BulletSpeed = 5;
