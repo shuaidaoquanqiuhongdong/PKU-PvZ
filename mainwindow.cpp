@@ -98,7 +98,10 @@ void MainWindow::startGame()
     // 动画 → 引擎：阳光收集动画播完标记死亡
     connect(animationManager, &AnimationManager::sunCollectAnimationFinished,
             gameEngine, [](Sun* sun) {
-                if (sun) sun->die();
+                if (sun) {
+                    sun->die();
+                    sun->markDeathAnimDone();
+                }
             });
 
     // 引擎 → 主窗口：游戏结束

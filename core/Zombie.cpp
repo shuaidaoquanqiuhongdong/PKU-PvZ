@@ -1,11 +1,12 @@
 #include "Zombie.h"
 #include "Plant.h"
+#include "GameConfig.h"
 
 Zombie::Zombie(int r, int c, int hp_, int speed_)
     : GameEntity(r, c, hp_, EntityType::Zombie)
     , speed(speed_)
-    , attackDamage(20)
-    , attackInterval(1000)
+    , attackDamage(GameConfig::ZombieAttackDamage)
+    , attackInterval(GameConfig::ZombieAttackInterval)
     , attacking(false)
     , targetPlant(nullptr)
 {
@@ -25,12 +26,13 @@ void Zombie::updateEntity()
         moveLeft();
 }
 
-GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, 300, 1) {}
+GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, GameConfig::GenziZombieHp, GameConfig::GenziZombieSpeed) {}
 
 GenziZombie::~GenziZombie() {}
 
-DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, 200, 2)
+DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, GameConfig::DancingZombieHp, GameConfig::DancingZombieSpeed)
 {
+    spawnInterval = GameConfig::DancingZombieSpawnInterval;
     spawnTimer.start();
 }
 
@@ -77,6 +79,6 @@ bool DancingZombie::readyToSpawn() const
 
 void DancingZombie::resetSpawnTimer() { spawnTimer.start(); }
 
-DancerZombie::DancerZombie(int row_, int col_) : Zombie(row_, col_, 100, 2) {}
+DancerZombie::DancerZombie(int row_, int col_) : Zombie(row_, col_, GameConfig::DancerZombieHp, GameConfig::DancerZombieSpeed) {}
 
 DancerZombie::~DancerZombie() {}

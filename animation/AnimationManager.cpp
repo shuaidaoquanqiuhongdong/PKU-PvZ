@@ -858,8 +858,7 @@ void AnimationManager::setupSunAnimations(Sun* sun)
 
 
     QVector<QPixmap> idleFrames;
-    QString sunPath = QString(PROJECT_SOURCE_DIR) + "/resources/images/other/sunlight.png";
-    QPixmap sunPixmap = ResourceManager::loadPixmap(sunPath);
+    QPixmap sunPixmap = ResourceManager::loadPixmap(":/images/other/sunlight.png");
     if (!sunPixmap.isNull()) {
         idleFrames.append(sunPixmap);
     }

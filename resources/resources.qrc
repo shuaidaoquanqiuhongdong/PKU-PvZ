@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/images">
         <file alias="other/lawn.png">images/other/lawn.png</file>
+        <file alias="other/sunlight.png">images/other/sunlight.png</file>
 
         <file alias="eater/walk_0.png">images/eater/walk_0.png</file>
         <file alias="eater/walk_1.png">images/eater/walk_1.png</file>

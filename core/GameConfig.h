@@ -3,7 +3,7 @@
 
 namespace GameConfig
 {
-    // --- 场景与网格设置 ---(等后续背景制作出来再修改参数)
+    // --- 场景与网格设置 ---
     inline constexpr int SceneWidth = 1408; // 场景总宽度
     inline constexpr int SceneHeight = 768; // 场景总高度
     inline constexpr int Rows = 5;          // 草坪行数
@@ -36,6 +36,28 @@ namespace GameConfig
 
     inline constexpr int RainchiliCost = 125;
     inline constexpr int RainchiliHp = 1;
+    inline constexpr int RainchiliFuseTime = 1500;
+
+    // --- 僵尸属性 ---
+    inline constexpr int ZombieAttackDamage = 20;
+    inline constexpr int ZombieAttackInterval = 1000;
+
+    inline constexpr int GenziZombieHp = 300;
+    inline constexpr int GenziZombieSpeed = 1;
+
+    inline constexpr int DancingZombieHp = 200;
+    inline constexpr int DancingZombieSpeed = 2;
+    inline constexpr int DancingZombieSpawnInterval = 8000;
+
+    inline constexpr int DancerZombieHp = 100;
+    inline constexpr int DancerZombieSpeed = 2;
+
+    // --- 子弹属性 ---
+    inline constexpr int BulletSpeed = 5;
+
+    // --- 阳光属性 ---
+    inline constexpr int FlowerSunValue = 25;
+    inline constexpr int SkySunValue = 25;
 
     inline int getPlantCost(const QString& type)
     {

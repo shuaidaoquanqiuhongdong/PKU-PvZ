@@ -37,6 +37,7 @@ public:
     void checkPlantAttack();
     void checkSunProduction();
     void checkRainchiliFuse();
+    void checkDancingZombieSpawn();
     void updateBullets();
     void checkCollisions();
     void cleanupDeadEntities();

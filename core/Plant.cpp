@@ -47,7 +47,7 @@ bool Firefan::readyToAttack() const
 Bullet* Firefan::createBullet()
 {
     attackTimer.start();
-    Bullet* b = new Bullet(row, col, attackDamage, 5);
+    Bullet* b = new Bullet(row, col, attackDamage, GameConfig::BulletSpeed);
     b->setPos(pos() + QPointF(35, -10));
     return b;
 }
@@ -75,7 +75,7 @@ bool Kimsunflower::readyToProduceSun() const
 Sun* Kimsunflower::createSun()
 {
     produceTimer.start();
-    Sun* s = new Sun(25);
+    Sun* s = new Sun(GameConfig::FlowerSunValue);
     s->setPos(pos() + QPointF(0, -20));
     return s;
 }

@@ -17,6 +17,7 @@ class GameEntity: public QObject, public QGraphicsPixmapItem
 protected:
     int row, col, hp, maxHp;
     bool alive;
+    bool deathAnimDone;
     EntityType entityType;
 public:
     GameEntity(int r, int c, int hp_, EntityType entityType_);
@@ -29,4 +30,6 @@ public:
     EntityType getEntityType() const;
     int getRow() const { return row; }
     int getCol() const { return col; }
+    void markDeathAnimDone() { deathAnimDone = true; }
+    bool isDeathAnimDone() const { return deathAnimDone; }
 };

@@ -34,6 +34,7 @@ void GameEngine::updateGame()
     checkPlantAttack();
     checkSunProduction();
     checkRainchiliFuse();
+    checkDancingZombieSpawn();
     checkZombieAttackPlant();
     checkCollisions();
     for (auto* zombie : zombies)
@@ -190,7 +191,58 @@ void GameEngine::checkRainchiliFuse()
 
         plant->takeDamage(9999);
         if (!plant->isAlive())
+        {
+            gridManager->removePlant(plant->getRow(), plant->getCol());
             emit entityDied(plant);
+        }
+    }
+}
+
+void GameEngine::checkDancingZombieSpawn()
+{
+    // 先收集需要生成的舞王僵尸，避免遍历时修改列表
+    QList<DancingZombie*> spawners;
+
+    for (auto* zombie : zombies)
+    {
+        if (!zombie->isAlive()) continue;
+
+        auto* dancing = dynamic_cast<DancingZombie*>(zombie);
+        if (!dancing) continue;
+        if (!dancing->readyToSpawn()) continue;
+
+        dancing->resetSpawnTimer();
+        spawners.append(dancing);
+    }
+
+    // 上下左右各生成一只伴舞僵尸（放在对应格子的中心）
+    struct { int dRow; int dCol; } offsets[] = {
+        {-1,  0}, // 上
+        { 1,  0}, // 下
+        { 0, -1}, // 左
+        { 0,  1}, // 右
+    };
+
+    for (auto* dancing : spawners)
+    {
+        int baseRow = dancing->getRow();
+        int baseCol = gridManager->scenePosToCell(dancing->pos()).x();
+
+        for (auto& off : offsets)
+        {
+            int spawnRow = baseRow + off.dRow;
+            int spawnCol = baseCol + off.dCol;
+
+            if (!gridManager->isValidCell(spawnRow, spawnCol))
+                continue;
+
+            auto* dancer = new DancerZombie(spawnRow, spawnCol);
+            dancer->setPos(gridManager->cellToScenePos(spawnRow, spawnCol));
+            zombies.append(dancer);
+
+            emit entityCreated(dancer);
+            emit entityAnimationChanged(dancer, AnimationState::Walk);
+        }
     }
 }
 
@@ -206,11 +258,11 @@ void GameEngine::checkCollisions()
             {
                 zombie->takeDamage(bullet->getDamage());
                 bullet->die();
+                bullet->markDeathAnimDone();
                 emit bulletHit(bullet->pos());
                 if(!zombie->isAlive())
                 {
                     emit entityDied(zombie);
-                    // 从 GridManager 移除（如果有植物在它面前）
                 }
                 break;
             }
@@ -220,35 +272,34 @@ void GameEngine::checkCollisions()
 
 void GameEngine::cleanupDeadEntities()
 {
-    // 子弹
     for (int i = bullets.size() - 1; i >= 0; --i)
     {
-        if (!bullets[i]->isAlive())
+        if (!bullets[i]->isAlive() && bullets[i]->isDeathAnimDone())
         {
             delete bullets[i];
             bullets.removeAt(i);
         }
     }
-    //阳光
     for (int i = suns.size() - 1; i >= 0; --i)
     {
-        if(!suns[i]->isAlive())
+        if (!suns[i]->isAlive() && suns[i]->isDeathAnimDone())
         {
             delete suns[i];
             suns.removeAt(i);
         }
     }
-    // 僵尸
     for (int i = zombies.size() - 1; i >= 0; --i)
     {
-        if (!zombies[i]->isAlive()) {
+        if (!zombies[i]->isAlive() && zombies[i]->isDeathAnimDone())
+        {
             delete zombies[i];
             zombies.removeAt(i);
         }
     }
-    // 植物
-    for (int i = plants.size() - 1; i >= 0; --i){
-        if(!plants[i]->isAlive()){
+    for (int i = plants.size() - 1; i >= 0; --i)
+    {
+        if (!plants[i]->isAlive() && plants[i]->isDeathAnimDone())
+        {
             gridManager->removePlant(plants[i]->getRow(), plants[i]->getCol());
             delete plants[i];
             plants.removeAt(i);
@@ -260,7 +311,7 @@ void GameEngine::generateSun()
 {
     int r = rand() % GameConfig::Rows;
     int c = rand() % GameConfig::Cols;
-    Sun* sun = new Sun(25);
+    Sun* sun = new Sun(GameConfig::SkySunValue);
     QPointF pos = gridManager->cellToScenePos(r, c);
     sun->setPos(pos);
     suns.append(sun);
@@ -311,12 +362,11 @@ void GameEngine::removeEntitySafely(GameEntity* entity)
 {
     if (!entity) return;
 
-    // 从场景移除（如果还在）
+    entity->markDeathAnimDone();
+
     if (entity->scene()) {
         entity->scene()->removeItem(entity);
     }
-
-    // 不 delete — 等 cleanupDeadEntities 统一处理
 }
 
 void GameEngine::checkZombieAttackPlant()
@@ -352,10 +402,18 @@ void GameEngine::checkZombieAttackPlant()
                     if (!plantAhead->isAlive())
                     {
                         emit entityDied(plantAhead);
+                        // 植物死亡后立即从网格移除，防止后续帧误判
+                        gridManager->removePlant(row, plantAhead->getCol());
                         zombie->stopAttack();
                         emit entityAnimationChanged(zombie, AnimationState::Walk);
                     }
                 }
+            }
+            else if (zombie->isAttacking())
+            {
+                // 有植物但距离不够 → 僵尸不应保持攻击状态（目标可能刚死，更远的植物还未接近）
+                zombie->stopAttack();
+                emit entityAnimationChanged(zombie, AnimationState::Walk);
             }
         }
         else
