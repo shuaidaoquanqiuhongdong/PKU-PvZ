@@ -6,6 +6,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Multimedia)
 
 qt_standard_project_setup()
+set(CMAKE_AUTORCC ON)
 
 file(GLOB_RECURSE SOURCES
     core/*.cpp core/*.h

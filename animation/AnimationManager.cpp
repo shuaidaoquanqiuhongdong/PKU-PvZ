@@ -20,6 +20,7 @@
 #include <QPropertyAnimation>
 #include <QSequentialAnimationGroup>
 #include <QStringList>
+#include <QVariant>
 
 #include <typeinfo>
 
@@ -373,10 +374,6 @@ void AnimationManager::playHitEffect(GameEntity* entity)
         return;
     }
 
-    if (entity->graphicsEffect()) {
-        return;
-    }
-
     auto* effect = new QGraphicsOpacityEffect();
     entity->setGraphicsEffect(effect);
 
@@ -395,7 +392,6 @@ void AnimationManager::playHitEffect(GameEntity* entity)
     group->addAnimation(fadeIn);
 
     QPointer<GameEntity> safeEntity(entity);
-
     connect(group, &QSequentialAnimationGroup::finished, this,
             [safeEntity, group]() {
                 if (safeEntity) {
@@ -424,25 +420,17 @@ void AnimationManager::playDeathEffect(GameEntity* entity)
         stopSunMotionAnimation(static_cast<Sun*>(entity));
     }
 
+    stopEntitySpriteAnimations(entity);
+
     if (animations.contains(entity)) {
         auto& table = animations[entity];
-
-        for (SpriteAnimation* animation : table) {
-            if (animation) {
-                animation->stop();
-            }
-        }
-
         SpriteAnimation* deathAnimation = table.value(AnimationState::Death, nullptr);
+
         if (deathAnimation) {
             deathAnimation->reset();
             deathAnimation->start();
             return;
         }
-    }
-
-    if (entity->graphicsEffect()) {
-        entity->setGraphicsEffect(nullptr);
     }
 
     auto* effect = new QGraphicsOpacityEffect();
@@ -455,7 +443,6 @@ void AnimationManager::playDeathEffect(GameEntity* entity)
     animation->setEasingCurve(QEasingCurve::OutQuad);
 
     QPointer<GameEntity> safeEntity(entity);
-
     connect(animation, &QPropertyAnimation::finished, this,
             [this, safeEntity, animation]() {
                 if (safeEntity) {
@@ -483,18 +470,16 @@ void AnimationManager::playPlantPlaceEffect(Plant* plant)
     auto* effect = new EffectItem(frames, 80, this);
     effect->setPos(plant->pos());
     effect->setZValue(EffectLayer);
-
     plant->scene()->addItem(effect);
 
-    connect(effect, &EffectItem::finished, this,
-            [this, effect]() {
-                if (effect->scene()) {
-                    effect->scene()->removeItem(effect);
-                }
+    connect(effect, &EffectItem::finished, this, [this, effect]() {
+        if (effect->scene()) {
+            effect->scene()->removeItem(effect);
+        }
 
-                emit effectFinished(effect);
-                effect->deleteLater();
-            });
+        emit effectFinished(effect);
+        effect->deleteLater();
+    });
 
     effect->play();
 }
@@ -511,18 +496,16 @@ void AnimationManager::playBulletHitEffect(QPointF pos)
     auto* effect = new EffectItem(frames, 70, this);
     effect->setPos(pos);
     effect->setZValue(EffectLayer);
-
     lastKnownScene->addItem(effect);
 
-    connect(effect, &EffectItem::finished, this,
-            [this, effect]() {
-                if (effect->scene()) {
-                    effect->scene()->removeItem(effect);
-                }
+    connect(effect, &EffectItem::finished, this, [this, effect]() {
+        if (effect->scene()) {
+            effect->scene()->removeItem(effect);
+        }
 
-                emit effectFinished(effect);
-                effect->deleteLater();
-            });
+        emit effectFinished(effect);
+        effect->deleteLater();
+    });
 
     effect->play();
 }
@@ -543,16 +526,15 @@ void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF en
 
     stopSunMotionAnimation(sun);
 
+    currentStates[sun] = AnimationState::Spawn;
+
     sun->setVisible(true);
     sun->setOpacity(1.0);
     sun->setGraphicsEffect(nullptr);
     sun->setPos(start);
-    sun->setZValue(SunLayer);
-
-    currentStates[sun] = AnimationState::Spawn;
 
     auto* animation = new QPropertyAnimation(sun, "pos", this);
-    animation->setDuration(900);
+    animation->setDuration(2000);
     animation->setStartValue(start);
     animation->setEndValue(end);
     animation->setEasingCurve(QEasingCurve::OutBounce);
@@ -560,7 +542,6 @@ void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF en
     sunMotionAnimations.insert(sun, animation);
 
     QPointer<Sun> safeSun(sun);
-
     connect(animation, &QPropertyAnimation::finished, this,
             [this, safeSun, animation]() {
                 if (safeSun && sunMotionAnimations.value(safeSun.data()) == animation) {
@@ -569,7 +550,7 @@ void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF en
 
                 animation->deleteLater();
 
-                if (safeSun) {
+                if (safeSun && safeSun->isAlive()) {
                     playSunIdleAnimation(safeSun.data());
                 }
             });
@@ -617,25 +598,25 @@ void AnimationManager::playSunIdleAnimation(Sun* sun)
 
     const QPointF basePos = sun->pos();
 
-    auto* floatUp = new QPropertyAnimation(sun, "pos");
-    floatUp->setDuration(700);
-    floatUp->setStartValue(basePos);
-    floatUp->setEndValue(basePos + QPointF(0, -8));
-    floatUp->setEasingCurve(QEasingCurve::InOutSine);
+    auto* upAnimation = new QPropertyAnimation(sun, "pos");
+    upAnimation->setDuration(700);
+    upAnimation->setStartValue(basePos);
+    upAnimation->setEndValue(basePos + QPointF(0, -8));
+    upAnimation->setEasingCurve(QEasingCurve::InOutSine);
 
-    auto* floatDown = new QPropertyAnimation(sun, "pos");
-    floatDown->setDuration(700);
-    floatDown->setStartValue(basePos + QPointF(0, -8));
-    floatDown->setEndValue(basePos);
-    floatDown->setEasingCurve(QEasingCurve::InOutSine);
+    auto* downAnimation = new QPropertyAnimation(sun, "pos");
+    downAnimation->setDuration(700);
+    downAnimation->setStartValue(basePos + QPointF(0, -8));
+    downAnimation->setEndValue(basePos);
+    downAnimation->setEasingCurve(QEasingCurve::InOutSine);
 
-    auto* group = new QSequentialAnimationGroup(this);
-    group->addAnimation(floatUp);
-    group->addAnimation(floatDown);
-    group->setLoopCount(-1);
+    auto* floatGroup = new QSequentialAnimationGroup(this);
+    floatGroup->addAnimation(upAnimation);
+    floatGroup->addAnimation(downAnimation);
+    floatGroup->setLoopCount(-1);
 
-    sunMotionAnimations.insert(sun, group);
-    group->start();
+    sunMotionAnimations.insert(sun, floatGroup);
+    floatGroup->start();
 }
 
 void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
@@ -652,22 +633,10 @@ void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
         bindEntity(sun);
     }
 
-    if (animations.contains(sun)) {
-        auto& table = animations[sun];
-        for (SpriteAnimation* animation : table) {
-            if (animation) {
-                animation->stop();
-            }
-        }
-    }
-
+    stopEntitySpriteAnimations(sun);
     stopSunMotionAnimation(sun);
 
     currentStates[sun] = AnimationState::Collect;
-
-    if (sun->graphicsEffect()) {
-        sun->setGraphicsEffect(nullptr);
-    }
 
     auto* opacityEffect = new QGraphicsOpacityEffect();
     sun->setGraphicsEffect(opacityEffect);
@@ -690,7 +659,6 @@ void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
     sunMotionAnimations.insert(sun, group);
 
     QPointer<Sun> safeSun(sun);
-
     connect(group, &QParallelAnimationGroup::finished, this,
             [this, safeSun, group]() {
                 if (safeSun && sunMotionAnimations.value(safeSun.data()) == group) {
@@ -742,24 +710,15 @@ void AnimationManager::setupPlantAnimations(Plant* plant)
         false
         );
 
-    const int produceCount = plantProduceFrameCount(key);
-    if (produceCount > 0) {
+    const int produceFrameCount = plantProduceFrameCount(key);
+    if (produceFrameCount > 0) {
         QVector<QPixmap> produceFrames =
-            ResourceManager::loadFrames(folder, "produce", produceCount);
+            ResourceManager::loadFrames(folder, "produce", produceFrameCount);
 
         addSpriteAnimation(
             plant,
             AnimationState::Produce,
             produceFrames,
-            120,
-            false
-            );
-    }
-    else {
-        addSpriteAnimation(
-            plant,
-            AnimationState::Produce,
-            idleFrames,
             120,
             false
             );
@@ -856,14 +815,8 @@ void AnimationManager::setupSunAnimations(Sun* sun)
         return;
     }
 
-
-    QVector<QPixmap> idleFrames;
-    QString sunPath = QString(PROJECT_SOURCE_DIR) + "/resources/images/other/sunlight.png";
-    QPixmap sunPixmap = ResourceManager::loadPixmap(sunPath);
-    if (!sunPixmap.isNull()) {
-        idleFrames.append(sunPixmap);
-    }
-
+    QVector<QPixmap> idleFrames =
+        ResourceManager::loadFrames(":/images/other/sunligt", "sun", 3);
 
     addSpriteAnimation(
         sun,
@@ -896,14 +849,6 @@ void AnimationManager::addSpriteAnimation(
         return;
     }
 
-    if (animations[entity].contains(state)) {
-        SpriteAnimation* old = animations[entity].take(state);
-        if (old) {
-            old->stop();
-            old->deleteLater();
-        }
-    }
-
     auto* animation = new SpriteAnimation(entity, this);
     animation->setFrames(frames);
     animation->setFrameInterval(interval);
@@ -917,10 +862,6 @@ void AnimationManager::addSpriteAnimation(
         connect(animation, &SpriteAnimation::finished, this,
                 [this, safeEntity, state]() {
                     if (!safeEntity) {
-                        return;
-                    }
-
-                    if (currentStates.value(safeEntity.data(), AnimationState::Idle) != state) {
                         return;
                     }
 
@@ -960,22 +901,17 @@ int AnimationManager::animationPriority(AnimationState state) const
     switch (state) {
     case AnimationState::Death:
         return 100;
-
     case AnimationState::Hit:
         return 80;
-
     case AnimationState::Attack:
     case AnimationState::Produce:
         return 60;
-
     case AnimationState::Walk:
         return 30;
-
     case AnimationState::Spawn:
     case AnimationState::Collect:
     case AnimationState::Move:
         return 20;
-
     case AnimationState::Idle:
         return 10;
     }
