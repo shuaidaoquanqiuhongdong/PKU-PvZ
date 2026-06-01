@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QVBoxLayout>
 
 class MainMenuWidget : public QWidget
 {
@@ -12,10 +13,18 @@ public:
     explicit MainMenuWidget(QWidget *parent = nullptr);
 signals:
     void startClicked();
+    void zombieModeClicked();
     void exitClicked();
+private slots:
+    void onStartClicked();
+    void onZombieModeClicked();
 private:
-    QPushButton* startButton;
+    QPushButton* classicModeBtn;
+    QPushButton* zombieModeBtn;
     QPushButton* exitButton;
+    QLabel* modePanel;
+    void showModePanel();
+    void hideModePanel();
 };
 
 #endif

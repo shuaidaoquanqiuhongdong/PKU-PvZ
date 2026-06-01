@@ -27,6 +27,7 @@ private:
     int totalWave;
     int zombiesInCurrentWave;
     bool waveCleared;
+    bool zombieMode;
 
 public:
     GameEngine();
@@ -38,6 +39,7 @@ public:
     void resume();
     void stop();
     bool placePlant(QString plantType, int row, int col);
+    bool placeZombie(QString zombieType, int row, int col);
     void checkPlantAttack();
     void checkSunProduction();
     void checkRainchiliFuse();
@@ -53,6 +55,8 @@ public:
     void checkWaveTransition();
     void startNextWave();
     void removeEntitySafely(GameEntity* entity);
+    void startZombieMode();
+    bool isZombieMode() const { return zombieMode; }
 signals:
     void sunChanged(int value);
     void waveChanged(int currentWave, int totalWave);

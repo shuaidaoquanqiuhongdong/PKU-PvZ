@@ -3,6 +3,7 @@
 
 CardPanel::CardPanel(QWidget *parent)
     : QWidget(parent)
+    , plantMode(true)
 {
     setFixedHeight(70);
     setStyleSheet("background-color: #3a3a3a;");
@@ -13,39 +14,68 @@ CardPanel::CardPanel(QWidget *parent)
 }
 
 void CardPanel::addPlantCard(const QString& plantType, const QString& displayName,
-                              int cost, const QString& iconPath)
+                             int cost, const QString& iconPath)
 {
+    plantMode = true;
     auto* card = new PlantCardWidget(plantType, displayName, cost, iconPath, this);
     cards.append(card);
-
-    // Insert before the trailing stretch
     layout->insertWidget(layout->count() - 1, card);
 
-    connect(card, &PlantCardWidget::clicked, this, [this](const QString& type) {
-        if (currentSelectedPlantType == type) {
+    connect(card, &PlantCardWidget::clicked, this, [this, plantType](const QString&) {
+        if (currentSelectedType == plantType) {
             clearSelection();
         } else {
             clearSelection();
-            currentSelectedPlantType = type;
+            currentSelectedType = plantType;
             for (auto* c : cards) {
-                if (c->getPlantType() == type) {
+                if (c->getPlantType() == plantType) {
                     c->setSelected(true);
                     break;
                 }
             }
         }
-        emit plantSelected(currentSelectedPlantType);
+        emit cardSelected(currentSelectedType, true);
     });
 }
 
-QString CardPanel::selectedPlantType() const
+void CardPanel::addZombieCard(const QString& zombieType, const QString& displayName,
+                              int cost, const QString& iconPath)
 {
-    return currentSelectedPlantType;
+    plantMode = false;
+    auto* card = new PlantCardWidget(zombieType, displayName, cost, iconPath, this);
+    cards.append(card);
+    layout->insertWidget(layout->count() - 1, card);
+
+    connect(card, &PlantCardWidget::clicked, this, [this, zombieType](const QString&) {
+        if (currentSelectedType == zombieType) {
+            clearSelection();
+        } else {
+            clearSelection();
+            currentSelectedType = zombieType;
+            for (auto* c : cards) {
+                if (c->getPlantType() == zombieType) {
+                    c->setSelected(true);
+                    break;
+                }
+            }
+        }
+        emit cardSelected(currentSelectedType, false);
+    });
+}
+
+QString CardPanel::selectedCardType() const
+{
+    return currentSelectedType;
+}
+
+bool CardPanel::isPlantMode() const
+{
+    return plantMode;
 }
 
 void CardPanel::clearSelection()
 {
-    currentSelectedPlantType.clear();
+    currentSelectedType.clear();
     for (auto* card : cards) {
         card->setSelected(false);
     }
@@ -56,4 +86,14 @@ void CardPanel::updateCardState(int currentSun)
     for (auto* card : cards) {
         card->setAffordable(currentSun >= card->getCost());
     }
+}
+
+void CardPanel::clearAllCards()
+{
+    clearSelection();
+    for (auto* card : cards) {
+        layout->removeWidget(card);
+        card->deleteLater();
+    }
+    cards.clear();
 }

@@ -1,5 +1,6 @@
 #include "PlantCardWidget.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPainter>
 #include <QMouseEvent>
 
@@ -13,16 +14,17 @@ PlantCardWidget::PlantCardWidget(const QString& plantType, const QString& displa
     , selected(false)
     , affordable(true)
 {
-    setFixedSize(70, 80);
+    setFixedSize(70, 90);
     setCursor(Qt::PointingHandCursor);
 
-    auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(2, 2, 2, 2);
-    layout->setSpacing(2);
+    auto* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(4, 4, 4, 4);
+    mainLayout->setSpacing(2);
 
-    // Try to load icon, create colored placeholder on failure
-    icon = QPixmap(iconPath);
-    if (icon.isNull()) {
+    QPixmap tempIcon(iconPath);
+    if (!tempIcon.isNull()) {
+        icon = tempIcon;
+    } else {
         icon = QPixmap(50, 50);
         icon.fill(Qt::transparent);
         QPainter p(&icon);
@@ -39,22 +41,40 @@ PlantCardWidget::PlantCardWidget(const QString& plantType, const QString& displa
     }
 
     auto* iconLabel = new QLabel(this);
-    iconLabel->setFixedSize(60, 50);
+    iconLabel->setFixedSize(60, 55);
     iconLabel->setAlignment(Qt::AlignCenter);
-    iconLabel->setPixmap(icon.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    layout->addWidget(iconLabel, 0, Qt::AlignCenter);
+    iconLabel->setPixmap(icon.scaled(55, 55, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    mainLayout->addWidget(iconLabel, 0, Qt::AlignCenter);
 
     auto* nameLabel = new QLabel(displayName, this);
     nameLabel->setAlignment(Qt::AlignCenter);
-    nameLabel->setStyleSheet("font-size: 9px; color: white;");
-    layout->addWidget(nameLabel);
+    nameLabel->setStyleSheet("font-size: 9px; color: white; font-weight: bold;");
+    mainLayout->addWidget(nameLabel);
+
+    auto* costLayout = new QHBoxLayout();
+    costLayout->setSpacing(2);
+    costLayout->addStretch();
+
+    auto* sunIconLabel = new QLabel(this);
+    QPixmap sunIcon(20, 20);
+    sunIcon.fill(Qt::transparent);
+    QPainter sp(&sunIcon);
+    sp.setRenderHint(QPainter::Antialiasing);
+    sp.setBrush(QColor("#FFD700"));
+    sp.setPen(QPen(QColor("#FFA500"), 1));
+    sp.drawEllipse(2, 2, 16, 16);
+    sunIconLabel->setPixmap(sunIcon.scaled(12, 12, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    costLayout->addWidget(sunIconLabel);
 
     auto* costLabel = new QLabel(QString::number(cost), this);
     costLabel->setAlignment(Qt::AlignCenter);
-    costLabel->setStyleSheet("font-size: 9px; color: #FFD700;");
-    layout->addWidget(costLabel);
+    costLabel->setStyleSheet("font-size: 10px; color: #FFD700; font-weight: bold;");
+    costLayout->addWidget(costLabel);
 
-    setStyleSheet("background-color: #4a4a4a; border-radius: 5px;");
+    costLayout->addStretch();
+    mainLayout->addLayout(costLayout);
+
+    setStyleSheet("background-color: #3a3a3a; border: 1px solid #555555; border-radius: 5px;");
 }
 
 QString PlantCardWidget::getPlantType() const { return plantType; }

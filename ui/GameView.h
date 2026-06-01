@@ -23,13 +23,24 @@ public:
     QPointF cellToScenePos(int row, int col) const;
     QGraphicsScene* getScene() const;
     void setPaused(bool paused);
+    void setPlantSelectionMode(bool enabled);
+    void setZombieMode(bool enabled);
 signals:
     void cellClicked(int row, int col);
+    void zombieCellClicked(int row, int col);
 protected:
     void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void leaveEvent(QEvent* event) override;
 private:
     QGraphicsScene* scene;
     QGraphicsRectItem* pauseOverlay = nullptr;
+    QGraphicsRectItem* hoverHighlight = nullptr;
+    QPoint lastHoverCell;
+    bool plantSelectionEnabled = false;
+    bool zombieMode = false;
+    void updateHoverHighlight(const QPoint& cell);
+    bool isRightSideColumn(int col) const;
 };
 
 #endif
