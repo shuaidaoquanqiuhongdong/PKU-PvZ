@@ -10,7 +10,7 @@ GameEngine::GameEngine()
     gridManager = new GridManager();
     gameLoopTimer = new QTimer(this);
     connect(gameLoopTimer, &QTimer::timeout, this, &GameEngine::updateGame);
-    sunValue=GameConfig::InitialSun;// 150
+    sunValue=GameConfig::InitialSun;
     sunGenerateTimer = new QTimer(this);
     connect(sunGenerateTimer, &QTimer::timeout, this, &GameEngine::generateSun);
 
@@ -38,9 +38,7 @@ void GameEngine::addZombie(Zombie* zombie)
 void GameEngine::updateGame()
 {
     checkPlantAttack();
-    if (!zombieMode) {
-        checkSunProduction();
-    }
+    if (!zombieMode) checkSunProduction();
     checkRainchiliFuse();
     checkZombieAttackPlant();
     checkCollisions();
@@ -48,9 +46,7 @@ void GameEngine::updateGame()
         zombie->updateEntity();
     updateBullets();
     cleanupDeadEntities();
-    if (!zombieMode) {
-        checkWaveTransition();
-    }
+    if (!zombieMode) checkWaveTransition();
     checkGameResult();
 }
 
@@ -63,6 +59,38 @@ void GameEngine::start()
     if (!zombieMode) {
         sunGenerateTimer->start(GameConfig::SunGenerateInterval);
         startNextWave();
+    }
+}
+
+void GameEngine::startZombieMode()
+{
+    zombieMode = true;
+    sunValue = GameConfig::InitialSun;
+    running = true;
+    gameLoopTimer->start(GameConfig::GameLoopInterval);
+    sunGenerateTimer->start(GameConfig::SunGenerateInterval);
+
+    int plantCols = 4;
+    for (int r = 0; r < GameConfig::Rows; ++r)
+    {
+        for (int c = 0; c < plantCols; ++c)
+        {
+            int roll = rand() % 100;
+            if (roll < 30) continue;
+
+            Plant* plant = nullptr;
+            if (c <= 1 && roll < 70)
+                plant = new Firefan(r, c);
+            else if (roll < 60)
+                plant = new Kimsunflower(r, c);
+            else
+                plant = new Bengbear(r, c);
+
+            plant->setPos(gridManager->cellToScenePos(r, c));
+            plants.append(plant);
+            gridManager->placePlant(plant, r, c);
+            emit entityCreated(plant);
+        }
     }
 }
 
@@ -139,6 +167,19 @@ bool GameEngine::placePlant(QString plantType, int row, int col)
     }
 
     return true;
+}
+
+bool GameEngine::removePlant(int row, int col)
+{
+    for (auto* plant : plants)
+    {
+        if (plant->getRow() == row && plant->getCol() == col)
+        {
+            plant->takeDamage(9999);
+            return true;
+        }
+    }
+    return false;
 }
 
 void GameEngine::checkPlantAttack()
@@ -457,20 +498,11 @@ void GameEngine::checkGameResult()
 {
     if (zombieMode)
     {
-        bool allPlantsDead = true;
         for (auto* p : plants)
         {
-            if (p->isAlive())
-            {
-                allPlantsDead = false;
-                break;
-            }
+            if (p->isAlive()) return;
         }
-        if (allPlantsDead)
-        {
-            emit gameOver(true);
-            return;
-        }
+        emit gameOver(true);
     }
     else
     {
@@ -530,59 +562,6 @@ void GameEngine::startNextWave()
     zombieSpawnTimer->start(initialInterval);
 
     emit waveChanged(currentWave, totalWave);
-}
-
-void GameEngine::startZombieMode()
-{
-    zombieMode = true;
-
-    srand(time(nullptr));
-
-    for (int row = 0; row < GameConfig::Rows; ++row)
-    {
-        for (int col = 0; col < 4; ++col)
-        {
-            int randVal = rand() % 10;
-            Plant* plant = nullptr;
-
-            if (row < 2)
-            {
-                if (randVal < 5)
-                    plant = new Firefan(row, col);
-                else if (randVal < 7)
-                    plant = new Bengbear(row, col);
-                else
-                    plant = new Kimsunflower(row, col);
-            }
-            else if (row == 2)
-            {
-                if (randVal < 4)
-                    plant = new Firefan(row, col);
-                else if (randVal < 6)
-                    plant = new Bengbear(row, col);
-                else
-                    plant = new Kimsunflower(row, col);
-            }
-            else
-            {
-                if (randVal < 3)
-                    plant = new Firefan(row, col);
-                else if (randVal < 5)
-                    plant = new Bengbear(row, col);
-                else
-                    plant = new Kimsunflower(row, col);
-            }
-
-            if (plant)
-            {
-                QPointF pos = gridManager->cellToScenePos(row, col);
-                plant->setPos(pos);
-                plants.append(plant);
-                gridManager->placePlant(plant, row, col);
-                emit entityCreated(plant);
-            }
-        }
-    }
 }
 
 bool GameEngine::placeZombie(QString zombieType, int row, int col)
