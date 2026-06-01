@@ -134,6 +134,21 @@ bool GameEngine::placePlant(QString plantType, int row, int col)
     return true;
 }
 
+bool GameEngine::removePlant(int row, int col)
+{
+    if (!running) return false;
+
+    Plant* plant = gridManager->getPlant(row, col);
+    if (!plant || !plant->isAlive()) return false;
+
+    plant->die();
+    plant->markDeathAnimDone(); // 跳过死亡动画，直接标记可删除
+    gridManager->removePlant(row, col);
+
+    emit entityDied(plant);
+    return true;
+}
+
 void GameEngine::checkPlantAttack()
 {
     for (auto* plant : plants)

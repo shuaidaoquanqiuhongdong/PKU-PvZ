@@ -38,6 +38,7 @@ public:
     void resume();
     void stop();
     bool placePlant(QString plantType, int row, int col);
+    bool removePlant(int row, int col);
     void checkPlantAttack();
     void checkSunProduction();
     void checkRainchiliFuse();
