@@ -36,7 +36,7 @@ void GameEngine::addZombie(Zombie* zombie)
 void GameEngine::updateGame()
 {
     checkPlantAttack();
-    checkSunProduction();
+    if (!zombieMode) checkSunProduction();
     checkRainchiliFuse();
     checkZombieAttackPlant();
     checkCollisions();
@@ -44,7 +44,7 @@ void GameEngine::updateGame()
         zombie->updateEntity();
     updateBullets();
     cleanupDeadEntities();
-    checkWaveTransition();
+    if (!zombieMode) checkWaveTransition();
     checkGameResult();
 }
 
@@ -56,6 +56,39 @@ void GameEngine::start()
     gameLoopTimer->start(GameConfig::GameLoopInterval);
     sunGenerateTimer->start(GameConfig::SunGenerateInterval);
     startNextWave();
+}
+
+void GameEngine::startZombieMode()
+{
+    zombieMode = true;
+    sunValue = GameConfig::InitialSun;
+    running = true;
+    gameLoopTimer->start(GameConfig::GameLoopInterval);
+    sunGenerateTimer->start(GameConfig::SunGenerateInterval);
+
+    // 随机植物阵型：前四列随机放植物，每把都不一样
+    int plantCols = 4;
+    for (int r = 0; r < GameConfig::Rows; ++r)
+    {
+        for (int c = 0; c < plantCols; ++c)
+        {
+            int roll = rand() % 100;
+            if (roll < 30) continue; // 30% 空格
+
+            Plant* plant = nullptr;
+            if (c <= 1 && roll < 70)
+                plant = new Firefan(r, c);
+            else if (roll < 60)
+                plant = new Kimsunflower(r, c);
+            else
+                plant = new Bengbear(r, c);
+
+            plant->setPos(gridManager->cellToScenePos(r, c));
+            plants.append(plant);
+            gridManager->placePlant(plant, r, c);
+            emit entityCreated(plant);
+        }
+    }
 }
 
 void GameEngine::pause()
@@ -146,6 +179,42 @@ bool GameEngine::removePlant(int row, int col)
     gridManager->removePlant(row, col);
 
     emit entityDied(plant);
+    return true;
+}
+
+bool GameEngine::placeZombie(QString zombieType, int row, int col)
+{
+    if (!running || !zombieMode) return false;
+
+    int cost = GameConfig::getZombieCost(zombieType);
+    if (sunValue < cost) return false;
+
+    // 僵尸只能放在右侧四列
+    if (col < GameConfig::Cols - 4) return false;
+    if (!gridManager->isValidCell(row, col)) return false;
+
+    Zombie* zombie = nullptr;
+    if (zombieType == "GenziZombie")
+        zombie = new GenziZombie(row, col);
+    else if (zombieType == "DancingZombie")
+        zombie = new DancingZombie(row, col);
+    else
+        return false;
+
+    sunValue -= cost;
+    QPointF pos = gridManager->cellToScenePos(row, col);
+    zombie->setPos(pos);
+    zombies.append(zombie);
+
+    if (auto* dancing = dynamic_cast<DancingZombie*>(zombie))
+    {
+        connect(dancing, &DancingZombie::readyToSpawn,
+                this, &GameEngine::onDancingZombieSpawn);
+    }
+
+    emit sunChanged(sunValue);
+    emit entityCreated(zombie);
+    emit entityAnimationChanged(zombie, AnimationState::Walk);
     return true;
 }
 
@@ -427,6 +496,17 @@ void GameEngine::checkZombieAttackPlant()
                 {
                     zombie->resetAttackTimer();
                     plantAhead->takeDamage(zombie->getAttackDamage());
+
+                    // 僵尸模式：向日葵被咬掉阳光
+                    if (zombieMode && plantAhead->getPlantType() == "Kimsunflower")
+                    {
+                        Sun* drop = new Sun(GameConfig::FlowerSunValue);
+                        drop->setPos(plantAhead->pos() + QPointF(rand() % 40 - 20, -20));
+                        suns.append(drop);
+                        emit entityCreated(drop);
+                        connect(drop, &Sun::clicked, this, &GameEngine::collectSun);
+                    }
+
                     if (!plantAhead->isAlive())
                     {
                         emit entityDied(plantAhead);
@@ -464,6 +544,16 @@ void GameEngine::checkGameResult()
             emit gameOver(false);
             return;
         }
+    }
+
+    // 僵尸模式：植物全灭即胜利
+    if (zombieMode)
+    {
+        for (auto* p : plants)
+        {
+            if (p->isAlive()) return;
+        }
+        emit gameOver(true);
     }
 }
 

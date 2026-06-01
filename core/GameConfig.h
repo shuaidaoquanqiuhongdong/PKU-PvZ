@@ -42,9 +42,11 @@ namespace GameConfig
     inline constexpr int ZombieAttackDamage = 20;
     inline constexpr int ZombieAttackInterval = 1000;
 
+    inline constexpr int GenziZombieCost = 50;
     inline constexpr int GenziZombieHp = 300;
     inline constexpr int GenziZombieSpeed = 1;
 
+    inline constexpr int DancingZombieCost = 100;
     inline constexpr int DancingZombieHp = 200;
     inline constexpr int DancingZombieSpeed = 1;
     inline constexpr int DancingZombieSpawnInterval = 5000;
@@ -75,5 +77,12 @@ namespace GameConfig
         if (type == "Kimsunflower")  return KimsunflowerHp;
         if (type == "Rainchili")     return RainchiliHp;
         return 300;
+    }
+
+    inline int getZombieCost(const QString& type)
+    {
+        if (type == "GenziZombie")       return GenziZombieCost;
+        if (type == "DancingZombie")     return DancingZombieCost;
+        return 50;
     }
 }
