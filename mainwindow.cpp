@@ -142,6 +142,8 @@ void MainWindow::startGame()
         else
             gameEngine->pause();
         paused = !paused;
+        topBar->setPaused(paused);
+        gameView->setPaused(paused);
     });
 
     // 初始化卡片

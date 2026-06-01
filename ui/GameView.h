@@ -3,6 +3,7 @@
 
 #include <QGraphicsView>
 #include <QGraphicsScene>
+#include <QGraphicsRectItem>
 #include <QPoint>
 
 class GameEntity;
@@ -21,12 +22,14 @@ public:
     QPoint scenePosToCell(QPointF scenePos) const;
     QPointF cellToScenePos(int row, int col) const;
     QGraphicsScene* getScene() const;
+    void setPaused(bool paused);
 signals:
     void cellClicked(int row, int col);
 protected:
     void mousePressEvent(QMouseEvent* event) override;
 private:
     QGraphicsScene* scene;
+    QGraphicsRectItem* pauseOverlay = nullptr;
 };
 
 #endif

@@ -3,6 +3,8 @@
 #include "core/GameConfig.h"
 #include <QMouseEvent>
 #include <QPainter>
+#include <QGraphicsRectItem>
+#include <QGraphicsTextItem>
 #include <QDebug>
 
 GameView::GameView(QWidget *parent)
@@ -99,10 +101,45 @@ QGraphicsScene* GameView::getScene() const
 
 void GameView::mousePressEvent(QMouseEvent* event)
 {
+    // 暂停时禁止点击场景
+    if (pauseOverlay && pauseOverlay->isVisible()) {
+        QGraphicsView::mousePressEvent(event);
+        return;
+    }
+
     QPointF scenePos = mapToScene(event->pos());
     QPoint cell = scenePosToCell(scenePos);
     if (cell.x() >= 0 && cell.y() >= 0) {
         emit cellClicked(cell.x(), cell.y());
     }
     QGraphicsView::mousePressEvent(event);
+}
+
+void GameView::setPaused(bool paused)
+{
+    if (!scene) return;
+
+    if (!pauseOverlay) {
+        // 创建半透明遮罩
+        pauseOverlay = new QGraphicsRectItem(0, 0,
+            GameConfig::SceneWidth, GameConfig::SceneHeight);
+        pauseOverlay->setBrush(QColor(0, 0, 0, 140));
+        pauseOverlay->setPen(Qt::NoPen);
+        pauseOverlay->setZValue(999);
+
+        // 暂停文字
+        auto* textItem = new QGraphicsTextItem("暂停中", pauseOverlay);
+        QFont font;
+        font.setPointSize(48);
+        font.setBold(true);
+        textItem->setFont(font);
+        textItem->setDefaultTextColor(Qt::white);
+        textItem->setPos(
+            (GameConfig::SceneWidth - textItem->boundingRect().width()) / 2.0,
+            (GameConfig::SceneHeight - textItem->boundingRect().height()) / 2.0);
+
+        scene->addItem(pauseOverlay);
+    }
+
+    pauseOverlay->setVisible(paused);
 }
