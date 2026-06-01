@@ -65,6 +65,18 @@
         <file alias="kun/death_6.png">images/kun/death_6.png</file>
         <file alias="kun/death_7.png">images/kun/death_7.png</file>
 
+        <file alias="genzizombie/idle_0.png">images/genzizombie/walk_0.png</file>
+        <file alias="genzizombie/idle_1.png">images/genzizombie/walk_1.png</file>
+        <file alias="genzizombie/idle_2.png">images/genzizombie/walk_2.png</file>
+        <file alias="genzizombie/idle_3.png">images/genzizombie/walk_3.png</file>
+        <file alias="genzizombie/idle_4.png">images/genzizombie/walk_4.png</file>
+
+        <file alias="dancingzombie/idle_0.png">images/dancingzombie/walk_0.png</file>
+        <file alias="dancingzombie/idle_1.png">images/dancingzombie/walk_1.png</file>
+        <file alias="dancingzombie/idle_2.png">images/dancingzombie/walk_2.png</file>
+        <file alias="dancingzombie/idle_3.png">images/dancingzombie/walk_3.png</file>
+        <file alias="dancingzombie/idle_4.png">images/dancingzombie/walk_4.png</file>
+
         <file alias="bengbear/idle_0.png">images/bengbear/idle_0.png</file>
         <file alias="bengbear/idle_1.png">images/bengbear/idle_1.png</file>
         <file alias="bengbear/idle_2.png">images/bengbear/idle_2.png</file>
