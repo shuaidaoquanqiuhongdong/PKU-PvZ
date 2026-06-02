@@ -41,7 +41,7 @@ QString normalizeResourceKey(QString key)
     // 伴舞僵尸当前没有独立素材，复用普通僵尸素材，保证舞王召唤后有动画。
     if (key.contains(QStringLiteral("dancerzombie")) ||
         key.contains(QStringLiteral("dancer"))) {
-        return QStringLiteral("genzizombie");
+        return QStringLiteral("chicken");
     }
 
     if (key.contains(QStringLiteral("eater"))) {
@@ -107,7 +107,7 @@ QString zombieResourceKey(Zombie* zombie)
     }
 
     if (dynamic_cast<DancerZombie*>(zombie)) {
-        return QStringLiteral("genzizombie");
+        return QStringLiteral("chicken");
     }
 
     if (dynamic_cast<GenziZombie*>(zombie)) {
