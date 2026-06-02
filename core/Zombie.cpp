@@ -38,13 +38,13 @@ DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, GameConfig:
     // 随机初始延迟 3~7s，让不同舞王僵尸的生成节奏错开
     int initialDelay = 3000 + rand() % 4000;
     QTimer::singleShot(initialDelay, this, [this]() {
-        if (isAlive() && !isAttacking())
+        if (isAlive())
             emit readyToSpawn(this);
         spawnTimer->start(GameConfig::DancingZombieSpawnInterval);
     });
 
     connect(spawnTimer, &QTimer::timeout, this, [this]() {
-        if (isAlive() && !isAttacking())
+        if (isAlive())
             emit readyToSpawn(this);
     });
 }
