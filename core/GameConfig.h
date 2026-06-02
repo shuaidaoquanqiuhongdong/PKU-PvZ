@@ -44,7 +44,7 @@ namespace GameConfig
     inline constexpr int DancingZombieCost = 100;
     inline constexpr int DancingZombieHp = 200;
     inline constexpr int DancingZombieSpeed = 1;
-    inline constexpr int DancingZombieSpawnInterval = 5000;
+    inline constexpr int DancingZombieSpawnInterval = 8000;
 
     inline constexpr int DancerZombieHp = 100;
     inline constexpr int DancerZombieSpeed = 1;
