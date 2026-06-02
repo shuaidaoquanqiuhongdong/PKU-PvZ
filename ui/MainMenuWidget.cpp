@@ -1,8 +1,12 @@
 #include "MainMenuWidget.h"
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPropertyAnimation>
+#include <QParallelAnimationGroup>
 
 MainMenuWidget::MainMenuWidget(QWidget *parent)
     : QWidget(parent)
+    , modePanel(nullptr)
 {
     setStyleSheet("background-color: #1a3a1a;");
 
@@ -18,26 +22,49 @@ MainMenuWidget::MainMenuWidget(QWidget *parent)
     subtitleLabel->setAlignment(Qt::AlignCenter);
     subtitleLabel->setStyleSheet("font-size: 18px; color: #8BC34A; padding-bottom: 40px;");
 
-    startButton = new QPushButton("开始游戏", this);
-    startButton->setFixedSize(220, 55);
-    startButton->setStyleSheet(
-        "QPushButton { font-size: 20px; background-color: #4CAF50; color: white;"
-        "border-radius: 8px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #45a049; }");
+    classicModeBtn = new QPushButton("🌱 经典模式", this);
+    classicModeBtn->setFixedSize(280, 65);
+    classicModeBtn->setStyleSheet(
+        "QPushButton { font-size: 22px; background-color: #4CAF50; color: white;"
+        "border-radius: 10px; font-weight: bold; border: 3px solid #45a049; }"
+        "QPushButton:hover { background-color: #66BB6A; border-color: #81C784; }"
+        "QPushButton:pressed { background-color: #388E3C; }");
+
+    zombieModeBtn = new QPushButton("🧟 操控僵尸模式", this);
+    zombieModeBtn->setFixedSize(280, 65);
+    zombieModeBtn->setStyleSheet(
+        "QPushButton { font-size: 22px; background-color: #FF7043; color: white;"
+        "border-radius: 10px; font-weight: bold; border: 3px solid #E64A19; }"
+        "QPushButton:hover { background-color: #FF8A65; border-color: #FFAB91; }"
+        "QPushButton:pressed { background-color: #E64A19; }");
 
     exitButton = new QPushButton("退出游戏", this);
     exitButton->setFixedSize(220, 55);
     exitButton->setStyleSheet(
         "QPushButton { font-size: 20px; background-color: #f44336; color: white;"
-        "border-radius: 8px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #da190b; }");
+        "border-radius: 8px; font-weight: bold; border: 2px solid #da190b; }"
+        "QPushButton:hover { background-color: #EF5350; border-color: #ff7043; }"
+        "QPushButton:pressed { background-color: #C62828; }");
 
     layout->addWidget(titleLabel);
     layout->addWidget(subtitleLabel);
-    layout->addWidget(startButton, 0, Qt::AlignCenter);
+    layout->addWidget(classicModeBtn, 0, Qt::AlignCenter);
     layout->addSpacing(15);
+    layout->addWidget(zombieModeBtn, 0, Qt::AlignCenter);
+    layout->addSpacing(30);
     layout->addWidget(exitButton, 0, Qt::AlignCenter);
 
-    connect(startButton, &QPushButton::clicked, this, &MainMenuWidget::startClicked);
+    connect(classicModeBtn, &QPushButton::clicked, this, &MainMenuWidget::onStartClicked);
+    connect(zombieModeBtn, &QPushButton::clicked, this, &MainMenuWidget::onZombieModeClicked);
     connect(exitButton, &QPushButton::clicked, this, &MainMenuWidget::exitClicked);
+}
+
+void MainMenuWidget::onStartClicked()
+{
+    emit startClicked();
+}
+
+void MainMenuWidget::onZombieModeClicked()
+{
+    emit zombieModeClicked();
 }

@@ -13,12 +13,14 @@ public:
     explicit TopBarWidget(QWidget *parent = nullptr);
     void setSunValue(int value);
     void setWaveInfo(int currentWave, int totalWave);
+    void setPaused(bool paused);
 signals:
     void pauseClicked();
 private:
     SunDisplay* sunDisplay;
     QPushButton* pauseButton;
     QLabel* waveLabel;
+    bool isPaused = false;
 };
 
 #endif

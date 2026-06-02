@@ -3,17 +3,23 @@
 #include "core/GameConfig.h"
 #include <QMouseEvent>
 #include <QPainter>
+#include <QGraphicsRectItem>
+#include <QGraphicsTextItem>
 #include <QDebug>
 
 GameView::GameView(QWidget *parent)
     : QGraphicsView(parent)
     , scene(nullptr)
+    , pauseOverlay(nullptr)
+    , hoverHighlight(nullptr)
 {
     setRenderHint(QPainter::Antialiasing);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFixedSize(GameConfig::SceneWidth, GameConfig::SceneHeight);
+    setMouseTracking(true);
+    lastHoverCell = QPoint(-1, -1);
 }
 
 void GameView::applyScale(qreal scale)
@@ -60,6 +66,20 @@ void GameView::drawGrid()
             cell->setZValue(1);
         }
     }
+
+    if (zombieMode) {
+        QPen rightPen(QColor("#ff6b6b"), 2, Qt::DashLine);
+        for (int row = 0; row < GameConfig::Rows; ++row) {
+            for (int col = 5; col < GameConfig::Cols; ++col) {
+                qreal x = GameConfig::GridStartX + col * GameConfig::CellWidth;
+                qreal y = GameConfig::GridStartY + row * GameConfig::CellHeight;
+                auto* cell = scene->addRect(x, y, GameConfig::CellWidth, GameConfig::CellHeight, rightPen);
+                QBrush brush(QColor(255, 107, 107, 30));
+                cell->setBrush(brush);
+                cell->setZValue(2);
+            }
+        }
+    }
 }
 
 void GameView::addEntityItem(GameEntity* entity)
@@ -97,12 +117,139 @@ QGraphicsScene* GameView::getScene() const
     return scene;
 }
 
+void GameView::setPlantSelectionMode(bool enabled)
+{
+    plantSelectionEnabled = enabled;
+    if (!enabled && hoverHighlight) {
+        hoverHighlight->setVisible(false);
+    }
+}
+
+void GameView::setZombieMode(bool enabled)
+{
+    zombieMode = enabled;
+    if (scene) {
+        drawGrid();
+    }
+}
+
+bool GameView::isRightSideColumn(int col) const
+{
+    return col >= 5 && col < GameConfig::Cols;
+}
+
 void GameView::mousePressEvent(QMouseEvent* event)
 {
+    if (pauseOverlay && pauseOverlay->isVisible()) {
+        QGraphicsView::mousePressEvent(event);
+        return;
+    }
+
     QPointF scenePos = mapToScene(event->pos());
     QPoint cell = scenePosToCell(scenePos);
     if (cell.x() >= 0 && cell.y() >= 0) {
-        emit cellClicked(cell.x(), cell.y());
+        if (zombieMode) {
+            if (isRightSideColumn(cell.y())) {
+                emit zombieCellClicked(cell.x(), cell.y());
+            }
+        } else {
+            emit cellClicked(cell.x(), cell.y());
+        }
     }
     QGraphicsView::mousePressEvent(event);
+}
+
+void GameView::mouseMoveEvent(QMouseEvent* event)
+{
+    QPointF scenePos = mapToScene(event->pos());
+    QPoint cell = scenePosToCell(scenePos);
+
+    bool canHighlight = false;
+    if (zombieMode) {
+        canHighlight = plantSelectionEnabled && cell.x() >= 0 && isRightSideColumn(cell.y());
+    } else {
+        canHighlight = plantSelectionEnabled && cell.x() >= 0;
+    }
+
+    if (canHighlight) {
+        if (cell != lastHoverCell) {
+            updateHoverHighlight(cell);
+            lastHoverCell = cell;
+        }
+    } else {
+        if (lastHoverCell.x() >= 0) {
+            if (hoverHighlight) {
+                hoverHighlight->setVisible(false);
+            }
+            lastHoverCell = QPoint(-1, -1);
+        }
+    }
+
+    QGraphicsView::mouseMoveEvent(event);
+}
+
+void GameView::leaveEvent(QEvent* event)
+{
+    if (hoverHighlight) {
+        hoverHighlight->setVisible(false);
+    }
+    lastHoverCell = QPoint(-1, -1);
+    QGraphicsView::leaveEvent(event);
+}
+
+void GameView::updateHoverHighlight(const QPoint& cell)
+{
+    if (!scene) return;
+
+    qreal x = GameConfig::GridStartX + cell.y() * GameConfig::CellWidth;
+    qreal y = GameConfig::GridStartY + cell.x() * GameConfig::CellHeight;
+
+    if (!hoverHighlight) {
+        hoverHighlight = scene->addRect(x, y,
+                                         GameConfig::CellWidth,
+                                         GameConfig::CellHeight);
+        hoverHighlight->setZValue(100);
+    }
+
+    if (zombieMode) {
+        QColor highlightColor(255, 107, 107, 80);
+        QPen pen(highlightColor, 3);
+        hoverHighlight->setPen(pen);
+        hoverHighlight->setBrush(QBrush(highlightColor, Qt::Dense4Pattern));
+    } else {
+        QColor highlightColor(255, 255, 100, 80);
+        QPen pen(highlightColor, 3);
+        hoverHighlight->setPen(pen);
+        hoverHighlight->setBrush(QBrush(highlightColor, Qt::Dense4Pattern));
+    }
+
+    hoverHighlight->setRect(x, y, GameConfig::CellWidth, GameConfig::CellHeight);
+    hoverHighlight->setVisible(true);
+}
+
+void GameView::setPaused(bool paused)
+{
+    if (!scene) return;
+
+    if (!pauseOverlay) {
+        pauseOverlay = new QGraphicsRectItem(0, 0,
+            GameConfig::SceneWidth, GameConfig::SceneHeight);
+        pauseOverlay->setBrush(QColor(0, 0, 0, 140));
+        pauseOverlay->setPen(Qt::NoPen);
+        pauseOverlay->setZValue(999);
+
+        auto* textItem = new QGraphicsTextItem("暂停中", pauseOverlay);
+        QFont font;
+        font.setPointSize(48);
+        font.setBold(true);
+        textItem->setFont(font);
+        textItem->setDefaultTextColor(Qt::white);
+        textItem->setPos(
+            (GameConfig::SceneWidth - textItem->boundingRect().width()) / 2.0,
+            (GameConfig::SceneHeight - textItem->boundingRect().height()) / 2.0);
+
+        scene->addItem(pauseOverlay);
+    }
+
+    pauseOverlay->setVisible(paused);
 }

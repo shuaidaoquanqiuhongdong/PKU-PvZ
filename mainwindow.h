@@ -22,12 +22,16 @@ public:
 public slots:
     void showMainMenu();
     void startGame();
+    void startZombieMode();
     void showGameOver(bool win);
     void restartGame();
     void goToMainMenu();
 
 private:
     void clearGame();
+    void startGameInternal();
+    enum GameMode { ClassicMode, ZombieMode };
+    GameMode currentMode;
     QStackedWidget* stackedWidget;
     MainMenuWidget* mainMenuWidget;
     GamePageWidget* gamePageWidget;

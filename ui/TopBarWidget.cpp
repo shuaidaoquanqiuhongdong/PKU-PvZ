@@ -26,7 +26,15 @@ TopBarWidget::TopBarWidget(QWidget *parent)
     pauseButton->setStyleSheet("font-size: 14px;");
     layout->addWidget(pauseButton);
 
-    connect(pauseButton, &QPushButton::clicked, this, &TopBarWidget::pauseClicked);
+    connect(pauseButton, &QPushButton::clicked, this, [this]() {
+        emit pauseClicked();
+    });
+}
+
+void TopBarWidget::setPaused(bool paused)
+{
+    isPaused = paused;
+    pauseButton->setText(paused ? "继续" : "暂停");
 }
 
 void TopBarWidget::setSunValue(int value)

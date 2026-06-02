@@ -13,13 +13,18 @@ public:
     explicit CardPanel(QWidget *parent = nullptr);
     void addPlantCard(const QString& plantType, const QString& displayName,
                       int cost, const QString& iconPath);
-    QString selectedPlantType() const;
+    void addZombieCard(const QString& zombieType, const QString& displayName,
+                       int cost, const QString& iconPath);
+    QString selectedCardType() const;
+    bool isPlantMode() const;
     void clearSelection();
     void updateCardState(int currentSun);
+    void clearAllCards();
 signals:
-    void plantSelected(const QString& plantType);
+    void cardSelected(const QString& cardType, bool isPlant);
 private:
-    QString currentSelectedPlantType;
+    QString currentSelectedType;
+    bool plantMode;
     QList<PlantCardWidget*> cards;
     QHBoxLayout* layout;
 };

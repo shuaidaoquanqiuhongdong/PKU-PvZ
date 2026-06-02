@@ -19,36 +19,112 @@
 #include <QPointer>
 #include <QPropertyAnimation>
 #include <QSequentialAnimationGroup>
-#include <QStringList>
-#include <QVariant>
-
-#include <typeinfo>
 
 namespace {
 
 const QString ImageRoot = QStringLiteral(":/images");
 
-QString normalizeEntityKey(QString key)
+QString normalizeResourceKey(QString key)
 {
-    key = key.toLower();
+    key = key.toLower().trimmed();
 
-    const QStringList knownKeys = {
-        QStringLiteral("eater"),
-        QStringLiteral("chicken"),
-        QStringLiteral("kun"),
-        QStringLiteral("bengbear"),
-        QStringLiteral("kimsunflower"),
-        QStringLiteral("firefan"),
-        QStringLiteral("rainchili")
-    };
+    if (key.contains(QStringLiteral("genzizombie")) ||
+        key.contains(QStringLiteral("genzi"))) {
+        return QStringLiteral("genzizombie");
+    }
 
-    for (const QString& knownKey : knownKeys) {
-        if (key.contains(knownKey)) {
-            return knownKey;
-        }
+    if (key.contains(QStringLiteral("dancingzombie")) ||
+        key.contains(QStringLiteral("dancing"))) {
+        return QStringLiteral("dancingzombie");
+    }
+
+    // 伴舞僵尸当前没有独立素材，复用普通僵尸素材，保证舞王召唤后有动画。
+    if (key.contains(QStringLiteral("dancerzombie")) ||
+        key.contains(QStringLiteral("dancer"))) {
+        return QStringLiteral("genzizombie");
+    }
+
+    if (key.contains(QStringLiteral("eater"))) {
+        return QStringLiteral("eater");
+    }
+
+    if (key.contains(QStringLiteral("chicken"))) {
+        return QStringLiteral("chicken");
+    }
+
+    if (key.contains(QStringLiteral("kun"))) {
+        return QStringLiteral("kun");
+    }
+
+    if (key.contains(QStringLiteral("bengbear"))) {
+        return QStringLiteral("bengbear");
+    }
+
+    if (key.contains(QStringLiteral("kimsunflower")) ||
+        key.contains(QStringLiteral("sunflower"))) {
+        return QStringLiteral("kimsunflower");
+    }
+
+    if (key.contains(QStringLiteral("firefan"))) {
+        return QStringLiteral("firefan");
+    }
+
+    if (key.contains(QStringLiteral("rainchili")) ||
+        key.contains(QStringLiteral("chili"))) {
+        return QStringLiteral("rainchili");
     }
 
     return key;
+}
+
+QString plantResourceKey(Plant* plant)
+{
+    if (!plant) {
+        return QStringLiteral("bengbear");
+    }
+
+    const QString typeKey = normalizeResourceKey(plant->getPlantType());
+    if (!typeKey.isEmpty()) {
+        return typeKey;
+    }
+
+    const QString objectKey = normalizeResourceKey(plant->objectName());
+    if (!objectKey.isEmpty()) {
+        return objectKey;
+    }
+
+    return QStringLiteral("bengbear");
+}
+
+QString zombieResourceKey(Zombie* zombie)
+{
+    if (!zombie) {
+        return QStringLiteral("genzizombie");
+    }
+
+    if (dynamic_cast<DancingZombie*>(zombie)) {
+        return QStringLiteral("dancingzombie");
+    }
+
+    if (dynamic_cast<DancerZombie*>(zombie)) {
+        return QStringLiteral("genzizombie");
+    }
+
+    if (dynamic_cast<GenziZombie*>(zombie)) {
+        return QStringLiteral("genzizombie");
+    }
+
+    const QString dataKey = normalizeResourceKey(zombie->data(0).toString());
+    if (!dataKey.isEmpty()) {
+        return dataKey;
+    }
+
+    const QString objectKey = normalizeResourceKey(zombie->objectName());
+    if (!objectKey.isEmpty()) {
+        return objectKey;
+    }
+
+    return QStringLiteral("eater");
 }
 
 QString entityResourceKey(GameEntity* entity)
@@ -57,40 +133,17 @@ QString entityResourceKey(GameEntity* entity)
         return QString();
     }
 
-    QString key = entity->data(0).toString();
-    if (!key.isEmpty()) {
-        return normalizeEntityKey(key);
-    }
-
-    key = entity->objectName();
-    if (!key.isEmpty()) {
-        return normalizeEntityKey(key);
-    }
-
-    if (entity->metaObject()) {
-        key = QString::fromLatin1(entity->metaObject()->className());
-        if (!key.isEmpty()) {
-            const QString normalized = normalizeEntityKey(key);
-            if (!normalized.isEmpty() && normalized != key.toLower()) {
-                return normalized;
-            }
-        }
-    }
-
-    key = QString::fromLatin1(typeid(*entity).name());
-    if (!key.isEmpty()) {
-        const QString normalized = normalizeEntityKey(key);
-        if (!normalized.isEmpty() && normalized != key.toLower()) {
-            return normalized;
-        }
-    }
-
-    if (entity->getEntityType() == EntityType::Zombie) {
-        return QStringLiteral("eater");
-    }
-
-    if (entity->getEntityType() == EntityType::Plant) {
-        return QStringLiteral("bengbear");
+    switch (entity->getEntityType()) {
+    case EntityType::Plant:
+        return plantResourceKey(static_cast<Plant*>(entity));
+    case EntityType::Zombie:
+        return zombieResourceKey(static_cast<Zombie*>(entity));
+    case EntityType::Bullet:
+        return QStringLiteral("bullets");
+    case EntityType::Sun:
+        return QStringLiteral("other");
+    case EntityType::Effect:
+        return QStringLiteral("effects");
     }
 
     return QString();
@@ -138,7 +191,10 @@ int plantProduceFrameCount(const QString& key)
 
 int zombieWalkFrameCount(const QString& key)
 {
-    if (key == QStringLiteral("eater")) {
+    if (key == QStringLiteral("genzizombie") ||
+        key == QStringLiteral("dancingzombie") ||
+        key == QStringLiteral("eater") ||
+        key == QStringLiteral("kun")) {
         return 8;
     }
 
@@ -146,25 +202,20 @@ int zombieWalkFrameCount(const QString& key)
         return 4;
     }
 
-    if (key == QStringLiteral("kun")) {
-        return 8;
-    }
-
     return 1;
 }
 
 int zombieAttackFrameCount(const QString& key)
 {
-    if (key == QStringLiteral("eater")) {
+    if (key == QStringLiteral("genzizombie") ||
+        key == QStringLiteral("dancingzombie") ||
+        key == QStringLiteral("eater") ||
+        key == QStringLiteral("kun")) {
         return 6;
     }
 
     if (key == QStringLiteral("chicken")) {
         return 5;
-    }
-
-    if (key == QStringLiteral("kun")) {
-        return 6;
     }
 
     return 1;
@@ -172,16 +223,15 @@ int zombieAttackFrameCount(const QString& key)
 
 int zombieDeathFrameCount(const QString& key)
 {
-    if (key == QStringLiteral("eater")) {
+    if (key == QStringLiteral("genzizombie") ||
+        key == QStringLiteral("dancingzombie") ||
+        key == QStringLiteral("eater") ||
+        key == QStringLiteral("kun")) {
         return 8;
     }
 
     if (key == QStringLiteral("chicken")) {
         return 5;
-    }
-
-    if (key == QStringLiteral("kun")) {
-        return 8;
     }
 
     return 1;
@@ -193,6 +243,7 @@ bool canReleaseHighPriorityState(AnimationState oldState, AnimationState newStat
         return false;
     }
 
+    // Attack / Produce 是循环或短动作。目标消失后，后端会发 Walk / Idle，必须允许退回。
     if ((oldState == AnimationState::Attack || oldState == AnimationState::Produce) &&
         (newState == AnimationState::Walk || newState == AnimationState::Idle)) {
         return true;
@@ -214,12 +265,12 @@ void AnimationManager::bindEntity(GameEntity* entity)
         return;
     }
 
-    if (animations.contains(entity)) {
-        return;
-    }
-
     if (entity->scene()) {
         lastKnownScene = entity->scene();
+    }
+
+    if (animations.contains(entity)) {
+        return;
     }
 
     animations.insert(entity, QHash<AnimationState, SpriteAnimation*>());
@@ -237,11 +288,13 @@ void AnimationManager::bindEntity(GameEntity* entity)
 
     case EntityType::Bullet:
         setupBulletAnimations(static_cast<Bullet*>(entity));
+        playAnimation(entity, AnimationState::Move);
         break;
 
     case EntityType::Sun:
         setupSunAnimations(static_cast<Sun*>(entity));
-        playAnimation(entity, AnimationState::Idle);
+        // 不依赖 UI 额外连接 sunCreated，也能让普通生成、向日葵生成、向日葵被咬掉落都进入 Spawn。
+        playSunSpawnAnimation(static_cast<Sun*>(entity));
         break;
 
     case EntityType::Effect:
@@ -308,6 +361,23 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
         bindEntity(entity);
     }
 
+    if (entity->getEntityType() == EntityType::Sun) {
+        auto* sun = static_cast<Sun*>(entity);
+        if (state == AnimationState::Spawn) {
+            playSunSpawnAnimation(sun);
+            return;
+        }
+        if (state == AnimationState::Collect) {
+            playSunCollectAnimation(sun);
+            return;
+        }
+    }
+
+    if (entity->getEntityType() == EntityType::Bullet && state == AnimationState::Hit) {
+        playBulletHitEffect(entity->pos());
+        return;
+    }
+
     const AnimationState oldState = currentStates.value(entity, AnimationState::Idle);
 
     if (oldState == AnimationState::Death) {
@@ -332,12 +402,10 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
     auto& table = animations[entity];
 
     if (!table.contains(state)) {
-        if (entity->getEntityType() != EntityType::Bullet) {
-            qWarning() << "AnimationManager: missing animation state:"
-                       << static_cast<int>(state)
-                       << "entity key:"
-                       << entityResourceKey(entity);
-        }
+        qWarning() << "AnimationManager: missing animation state:"
+                   << static_cast<int>(state)
+                   << "entity key:"
+                   << entityResourceKey(entity);
         return;
     }
 
@@ -397,7 +465,6 @@ void AnimationManager::playHitEffect(GameEntity* entity)
                 if (safeEntity) {
                     safeEntity->setGraphicsEffect(nullptr);
                 }
-
                 group->deleteLater();
             });
 
@@ -449,7 +516,6 @@ void AnimationManager::playDeathEffect(GameEntity* entity)
                     safeEntity->setGraphicsEffect(nullptr);
                     emit deathAnimationFinished(safeEntity.data());
                 }
-
                 animation->deleteLater();
             });
 
@@ -487,6 +553,7 @@ void AnimationManager::playPlantPlaceEffect(Plant* plant)
 void AnimationManager::playBulletHitEffect(QPointF pos)
 {
     if (!lastKnownScene) {
+        qWarning() << "AnimationManager: no scene cached for bullet hit effect.";
         return;
     }
 
@@ -531,10 +598,12 @@ void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF en
     sun->setVisible(true);
     sun->setOpacity(1.0);
     sun->setGraphicsEffect(nullptr);
+    sun->setAcceptedMouseButtons(Qt::LeftButton);
+    sun->setZValue(SunLayer);
     sun->setPos(start);
 
     auto* animation = new QPropertyAnimation(sun, "pos", this);
-    animation->setDuration(2000);
+    animation->setDuration(900);
     animation->setStartValue(start);
     animation->setEndValue(end);
     animation->setEasingCurve(QEasingCurve::OutBounce);
@@ -565,8 +634,7 @@ void AnimationManager::playSunSpawnAnimation(Sun* sun)
     }
 
     const QPointF end = sun->pos();
-    const QPointF start(end.x(), -60.0);
-
+    const QPointF start = end + QPointF(0.0, -120.0);
     playSunSpawnAnimation(sun, start, end);
 }
 
@@ -638,6 +706,11 @@ void AnimationManager::playSunCollectAnimation(Sun* sun, QPointF targetPos)
 
     currentStates[sun] = AnimationState::Collect;
 
+    sun->setAcceptedMouseButtons(Qt::NoButton);
+    sun->setVisible(true);
+    sun->setOpacity(1.0);
+    sun->setZValue(SunLayer);
+
     auto* opacityEffect = new QGraphicsOpacityEffect();
     sun->setGraphicsEffect(opacityEffect);
 
@@ -688,7 +761,7 @@ void AnimationManager::setupPlantAnimations(Plant* plant)
         return;
     }
 
-    const QString key = entityResourceKey(plant);
+    const QString key = plantResourceKey(plant);
     const QString folder = entityFolder(plant);
 
     QVector<QPixmap> idleFrames =
@@ -702,6 +775,7 @@ void AnimationManager::setupPlantAnimations(Plant* plant)
         true
         );
 
+    // 射手攻击、坚果被动、辣椒蓄力都至少有可播放的短动作，避免状态缺失。
     addSpriteAnimation(
         plant,
         AnimationState::Attack,
@@ -742,7 +816,7 @@ void AnimationManager::setupZombieAnimations(Zombie* zombie)
         return;
     }
 
-    const QString key = entityResourceKey(zombie);
+    const QString key = zombieResourceKey(zombie);
     const QString folder = entityFolder(zombie);
 
     QVector<QPixmap> walkFrames =
@@ -796,8 +870,17 @@ void AnimationManager::setupBulletAnimations(Bullet* bullet)
         return;
     }
 
-    QPixmap pixmap =
-        ResourceManager::loadPixmap(":/images/bullets/pea.png");
+    QPixmap pixmap = ResourceManager::loadPixmap(":/images/bullets/pea.png");
+    QVector<QPixmap> moveFrames;
+    moveFrames.append(pixmap);
+
+    addSpriteAnimation(
+        bullet,
+        AnimationState::Move,
+        moveFrames,
+        100,
+        true
+        );
 
     bullet->setPixmap(pixmap);
     bullet->setOffset(
@@ -815,13 +898,8 @@ void AnimationManager::setupSunAnimations(Sun* sun)
         return;
     }
 
-
     QVector<QPixmap> idleFrames;
-    QPixmap sunPixmap = ResourceManager::loadPixmap(":/images/other/sunlight.png");
-    if (!sunPixmap.isNull()) {
-        idleFrames.append(sunPixmap);
-    }
-
+    idleFrames.append(ResourceManager::loadPixmap(":/images/other/sunlight.png"));
 
     addSpriteAnimation(
         sun,
@@ -839,6 +917,7 @@ void AnimationManager::setupSunAnimations(Sun* sun)
             );
     }
 
+    sun->setAcceptedMouseButtons(Qt::LeftButton);
     sun->setZValue(SunLayer);
     currentStates[sun] = AnimationState::Idle;
 }
@@ -940,5 +1019,6 @@ void AnimationManager::stopSunMotionAnimation(Sun* sun)
 
 QPointF AnimationManager::defaultSunCollectTarget() const
 {
+    // 当前 TopBar/SunDisplay 位于左上区域；UI 若能拿到精确 scene 坐标，可调用双参数版本覆盖。
     return QPointF(80.0, 40.0);
 }

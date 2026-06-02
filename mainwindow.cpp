@@ -15,12 +15,12 @@ MainWindow::MainWindow(QWidget *parent)
     , gamePageWidget(nullptr)
     , gameOverWidget(nullptr)
     , bgmPlayer(nullptr)
+    , currentMode(ClassicMode)
 {
     setWindowTitle("PvZLiteQt - 植物大战僵尸");
 
-    // 根据屏幕大小计算缩放比例
     constexpr int BaseW = 1408;
-    constexpr int BaseH = 888;
+    constexpr int BaseH = 960;
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen)
     {
@@ -45,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(mainMenuWidget, &MainMenuWidget::startClicked,
             this, &MainWindow::startGame);
+    connect(mainMenuWidget, &MainMenuWidget::zombieModeClicked,
+            this, &MainWindow::startZombieMode);
     connect(mainMenuWidget, &MainMenuWidget::exitClicked,
             this, &QMainWindow::close);
 }
@@ -57,6 +59,18 @@ void MainWindow::showMainMenu()
 }
 
 void MainWindow::startGame()
+{
+    currentMode = ClassicMode;
+    startGameInternal();
+}
+
+void MainWindow::startZombieMode()
+{
+    currentMode = ZombieMode;
+    startGameInternal();
+}
+
+void MainWindow::startGameInternal()
 {
     clearGame();
 
@@ -72,28 +86,56 @@ void MainWindow::startGame()
     auto* cardPanel = gamePageWidget->getCardPanel();
     auto* topBar    = gamePageWidget->getTopBarWidget();
 
-    // 点击格子 → 种植植物
-    connect(gameView, &GameView::cellClicked, this, [=](int row, int col) {
-        QString type = cardPanel->selectedPlantType();
-        if (!type.isEmpty()) {
-            bool ok = gameEngine->placePlant(type, row, col);
-            if (ok) {
-                cardPanel->clearSelection();
+    if (currentMode == ClassicMode) {
+        connect(gameView, &GameView::cellClicked, this, [=](int row, int col) {
+            QString type = cardPanel->selectedCardType();
+            if (!type.isEmpty()) {
+                bool ok = gameEngine->placePlant(type, row, col);
+                if (ok) {
+                    cardPanel->clearSelection();
+                    gameView->setPlantSelectionMode(false);
+                }
             }
-        }
-    });
+        });
 
-    // 引擎 → 视图：实体加入场景
+        connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
+            if (isPlant && !cardType.isEmpty()) {
+                gameView->setPlantSelectionMode(true);
+            } else {
+                gameView->setPlantSelectionMode(false);
+            }
+        });
+    } else {
+        gameEngine->startZombieMode();
+        gameView->setZombieMode(true);
+
+        connect(gameView, &GameView::zombieCellClicked, this, [=](int row, int col) {
+            QString type = cardPanel->selectedCardType();
+            if (!type.isEmpty()) {
+                bool ok = gameEngine->placeZombie(type, row, col);
+                if (ok) {
+                    cardPanel->clearSelection();
+                    gameView->setPlantSelectionMode(false);
+                }
+            }
+        });
+
+        connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
+            if (!isPlant && !cardType.isEmpty()) {
+                gameView->setPlantSelectionMode(true);
+            } else {
+                gameView->setPlantSelectionMode(false);
+            }
+        });
+    }
+
     connect(gameEngine, &GameEngine::entityCreated,
             gameView, &GameView::addEntityItem);
-    // 引擎 → 动画：绑定实体动画
     connect(gameEngine, &GameEngine::entityCreated,
             animationManager, &AnimationManager::bindEntity);
-    // 引擎 → 动画：实体死亡播放死亡效果
     connect(gameEngine, &GameEngine::entityDied,
             animationManager, &AnimationManager::playDeathEffect);
 
-    // 引擎 → UI：状态更新
     connect(gameEngine, &GameEngine::sunChanged,
             topBar, &TopBarWidget::setSunValue);
     connect(gameEngine, &GameEngine::sunChanged,
@@ -101,21 +143,16 @@ void MainWindow::startGame()
     connect(gameEngine, &GameEngine::waveChanged,
             topBar, &TopBarWidget::setWaveInfo);
 
-    // 引擎 → 动画：攻击/状态变化
     connect(gameEngine, &GameEngine::entityAnimationChanged,
             animationManager, &AnimationManager::playAnimation);
 
-    // 引擎 → 动画：子弹命中
     connect(gameEngine, &GameEngine::bulletHit,
             animationManager, &AnimationManager::playBulletHitEffect);
-    // 阳光收集动画暂时绕过（动画内部有bug待修）
     connect(gameEngine, &GameEngine::sunCollected,
             animationManager, qOverload<Sun*>(&AnimationManager::playSunCollectAnimation));
 
-    // 动画 → 引擎：死亡动画播完安全删除
     connect(animationManager, &AnimationManager::deathAnimationFinished,
             gameEngine, &GameEngine::removeEntitySafely);
-    // 动画 → 引擎：阳光收集动画播完标记死亡
     connect(animationManager, &AnimationManager::sunCollectAnimationFinished,
             gameEngine, [](Sun* sun) {
                 if (sun) {
@@ -124,17 +161,14 @@ void MainWindow::startGame()
                 }
             });
 
-    // 引擎 → 主窗口：游戏结束
     connect(gameEngine, &GameEngine::gameOver,
             this, &MainWindow::showGameOver);
 
-    // 结算界面按钮
     connect(gameOverWidget, &GameOverWidget::restartClicked,
             this, &MainWindow::restartGame);
     connect(gameOverWidget, &GameOverWidget::mainMenuClicked,
             this, &MainWindow::goToMainMenu);
 
-    // 暂停/恢复按钮
     connect(topBar, &TopBarWidget::pauseClicked, this, [=]() {
         if (!gameEngine) return;
         if (paused)
@@ -142,30 +176,34 @@ void MainWindow::startGame()
         else
             gameEngine->pause();
         paused = !paused;
+        topBar->setPaused(paused);
+        gameView->setPaused(paused);
     });
 
-    // 初始化卡片
-    cardPanel->addPlantCard("Firefan",      "不知火蛙",   100, "");
-    cardPanel->addPlantCard("Kimsunflower", "金日葵",     50,  "");
-    cardPanel->addPlantCard("Bengbear",     "熊绷果",     50,  "");
-    cardPanel->addPlantCard("Rainchili",    "带派辣椒",   125, "");
+    QString resPath = ":/images/";
+    if (currentMode == ClassicMode) {
+        cardPanel->addPlantCard("Firefan",      "不知火蛙",   100, resPath + "firefan/idle_0.png");
+        cardPanel->addPlantCard("Kimsunflower", "金日葵",     50,  resPath + "kimsunflower/idle_0.png");
+        cardPanel->addPlantCard("Bengbear",     "熊绷果",     50,  resPath + "bengbear/idle_0.png");
+        cardPanel->addPlantCard("Rainchili",    "带派辣椒",   125, resPath + "rainchili/idle_0.png");
+    } else {
+        cardPanel->addZombieCard("GenziZombie",   "普通僵尸",   50,  resPath + "genzizombie/idle_0.png");
+        cardPanel->addZombieCard("DancingZombie", "舞王僵尸",   100, resPath + "dancingzombie/idle_0.png");
+    }
 
-    // 应用屏幕缩放
     if (!qFuzzyCompare(scaleFactor, 1.0))
     {
         gameView->applyScale(scaleFactor);
         topBar->setFixedHeight(static_cast<int>(50 * scaleFactor));
-        cardPanel->setFixedHeight(static_cast<int>(70 * scaleFactor));
+        cardPanel->setFixedHeight(static_cast<int>(105 * scaleFactor));
     }
 
-    // 初始化场景
     gameView->initScene();
     topBar->setSunValue(150);
 
     stackedWidget->setCurrentWidget(gamePageWidget);
     gameEngine->start();
 
-    // 背景音乐
     bgmPlayer = new QMediaPlayer(this);
     auto* audioOutput = new QAudioOutput(this);
     bgmPlayer->setAudioOutput(audioOutput);
@@ -186,7 +224,11 @@ void MainWindow::showGameOver(bool win)
 
 void MainWindow::restartGame()
 {
-    startGame();
+    if (currentMode == ClassicMode) {
+        startGame();
+    } else {
+        startZombieMode();
+    }
 }
 
 void MainWindow::goToMainMenu()

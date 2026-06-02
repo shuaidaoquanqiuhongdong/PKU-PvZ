@@ -59,19 +59,15 @@ public:
     void playHitEffect(GameEntity* entity);
     void playDeathEffect(GameEntity* entity);
     void playPlantPlaceEffect(Plant* plant);
-
     void playBulletHitEffect(QPointF pos);
 
-    // Prompt 标准接口：需要调用者给出起点和终点。
+    // Prompt 标准接口：调用者给出阳光起点和终点。
     void playSunSpawnAnimation(Sun* sun, QPointF start, QPointF end);
     void playSunIdleAnimation(Sun* sun);
     void playSunCollectAnimation(Sun* sun, QPointF targetPos);
 
-    // 仓库现有 GameEngine 兼容接口：
-    // GameEngine::sunCreated(Sun*) 可以直接连接到这里。
+    // 兼容仓库现有/可能新增的单参数信号连接。
     void playSunSpawnAnimation(Sun* sun);
-
-    // GameEngine::sunCollected(Sun*) 可以直接连接到这里。
     void playSunCollectAnimation(Sun* sun);
 
 signals:
@@ -83,10 +79,10 @@ private:
     QHash<GameEntity*, QHash<AnimationState, SpriteAnimation*>> animations;
     QHash<GameEntity*, AnimationState> currentStates;
 
-    // 用于播放 bullet hit effect，因为 playBulletHitEffect 只有 QPointF 参数，没有 scene 参数。
+    // playBulletHitEffect 只有坐标参数，因此缓存最近一次实体所在的 scene。
     QGraphicsScene* lastKnownScene = nullptr;
 
-    // 阳光的 Spawn / Idle / Collect 位置动画。
+    // 阳光 Spawn / Idle / Collect 的位移动画。
     QHash<Sun*, QAbstractAnimation*> sunMotionAnimations;
 
     void setupPlantAnimations(Plant* plant);
@@ -102,13 +98,12 @@ private:
         const QVector<QPixmap>& frames,
         int interval,
         bool loop
-    );
+        );
+
     void stopEntitySpriteAnimations(GameEntity* entity);
-
     void stopSunMotionAnimation(Sun* sun);
+
     QPointF defaultSunCollectTarget() const;
-
-
 };
 
 #endif // ANIMATIONMANAGER_H

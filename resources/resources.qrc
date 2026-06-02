@@ -1,7 +1,79 @@
 <RCC>
     <qresource prefix="/images">
+        <file alias="genzizombie/idle_0.png">images/genzizombie/walk_0.png</file>
+        <file alias="genzizombie/idle_1.png">images/genzizombie/walk_1.png</file>
+        <file alias="genzizombie/idle_2.png">images/genzizombie/walk_2.png</file>
+        <file alias="genzizombie/idle_3.png">images/genzizombie/walk_3.png</file>
+        <file alias="genzizombie/idle_4.png">images/genzizombie/walk_4.png</file>
+        <file alias="genzizombie/idle_5.png">images/genzizombie/walk_5.png</file>
+        <file alias="genzizombie/idle_6.png">images/genzizombie/walk_6.png</file>
+        <file alias="genzizombie/idle_7.png">images/genzizombie/walk_7.png</file>
+
+        <file alias="dancingzombie/idle_0.png">images/dancingzombie/walk_0.png</file>
+        <file alias="dancingzombie/idle_1.png">images/dancingzombie/walk_1.png</file>
+        <file alias="dancingzombie/idle_2.png">images/dancingzombie/walk_2.png</file>
+        <file alias="dancingzombie/idle_3.png">images/dancingzombie/walk_3.png</file>
+        <file alias="dancingzombie/idle_4.png">images/dancingzombie/walk_4.png</file>
+        <file alias="dancingzombie/idle_5.png">images/dancingzombie/walk_5.png</file>
+        <file alias="dancingzombie/idle_6.png">images/dancingzombie/walk_6.png</file>
+        <file alias="dancingzombie/idle_7.png">images/dancingzombie/walk_7.png</file>
+
         <file alias="other/lawn.png">images/other/lawn.png</file>
         <file alias="other/sunlight.png">images/other/sunlight.png</file>
+
+        <file alias="bullets/pea.png">images/bullets/pea.png</file>
+
+        <file alias="effects/place_0.png">images/effects/place_0.png</file>
+        <file alias="effects/place_1.png">images/effects/place_1.png</file>
+        <file alias="effects/pea_hit_0.png">images/effects/pea_hit_0.png</file>
+        <file alias="effects/pea_hit_1.png">images/effects/pea_hit_1.png</file>
+        <file alias="effects/pea_hit_2.png">images/effects/pea_hit_2.png</file>
+
+        <file alias="genzizombie/walk_0.png">images/genzizombie/walk_0.png</file>
+        <file alias="genzizombie/walk_1.png">images/genzizombie/walk_1.png</file>
+        <file alias="genzizombie/walk_2.png">images/genzizombie/walk_2.png</file>
+        <file alias="genzizombie/walk_3.png">images/genzizombie/walk_3.png</file>
+        <file alias="genzizombie/walk_4.png">images/genzizombie/walk_4.png</file>
+        <file alias="genzizombie/walk_5.png">images/genzizombie/walk_5.png</file>
+        <file alias="genzizombie/walk_6.png">images/genzizombie/walk_6.png</file>
+        <file alias="genzizombie/walk_7.png">images/genzizombie/walk_7.png</file>
+        <file alias="genzizombie/attack_0.png">images/genzizombie/attack_0.png</file>
+        <file alias="genzizombie/attack_1.png">images/genzizombie/attack_1.png</file>
+        <file alias="genzizombie/attack_2.png">images/genzizombie/attack_2.png</file>
+        <file alias="genzizombie/attack_3.png">images/genzizombie/attack_3.png</file>
+        <file alias="genzizombie/attack_4.png">images/genzizombie/attack_4.png</file>
+        <file alias="genzizombie/attack_5.png">images/genzizombie/attack_5.png</file>
+        <file alias="genzizombie/death_0.png">images/genzizombie/death_0.png</file>
+        <file alias="genzizombie/death_1.png">images/genzizombie/death_1.png</file>
+        <file alias="genzizombie/death_2.png">images/genzizombie/death_2.png</file>
+        <file alias="genzizombie/death_3.png">images/genzizombie/death_3.png</file>
+        <file alias="genzizombie/death_4.png">images/genzizombie/death_4.png</file>
+        <file alias="genzizombie/death_5.png">images/genzizombie/death_5.png</file>
+        <file alias="genzizombie/death_6.png">images/genzizombie/death_6.png</file>
+        <file alias="genzizombie/death_7.png">images/genzizombie/death_7.png</file>
+
+        <file alias="dancingzombie/walk_0.png">images/dancingzombie/walk_0.png</file>
+        <file alias="dancingzombie/walk_1.png">images/dancingzombie/walk_1.png</file>
+        <file alias="dancingzombie/walk_2.png">images/dancingzombie/walk_2.png</file>
+        <file alias="dancingzombie/walk_3.png">images/dancingzombie/walk_3.png</file>
+        <file alias="dancingzombie/walk_4.png">images/dancingzombie/walk_4.png</file>
+        <file alias="dancingzombie/walk_5.png">images/dancingzombie/walk_5.png</file>
+        <file alias="dancingzombie/walk_6.png">images/dancingzombie/walk_6.png</file>
+        <file alias="dancingzombie/walk_7.png">images/dancingzombie/walk_7.png</file>
+        <file alias="dancingzombie/attack_0.png">images/dancingzombie/attack_0.png</file>
+        <file alias="dancingzombie/attack_1.png">images/dancingzombie/attack_1.png</file>
+        <file alias="dancingzombie/attack_2.png">images/dancingzombie/attack_2.png</file>
+        <file alias="dancingzombie/attack_3.png">images/dancingzombie/attack_3.png</file>
+        <file alias="dancingzombie/attack_4.png">images/dancingzombie/attack_4.png</file>
+        <file alias="dancingzombie/attack_5.png">images/dancingzombie/attack_5.png</file>
+        <file alias="dancingzombie/death_0.png">images/dancingzombie/death_0.png</file>
+        <file alias="dancingzombie/death_1.png">images/dancingzombie/death_1.png</file>
+        <file alias="dancingzombie/death_2.png">images/dancingzombie/death_2.png</file>
+        <file alias="dancingzombie/death_3.png">images/dancingzombie/death_3.png</file>
+        <file alias="dancingzombie/death_4.png">images/dancingzombie/death_4.png</file>
+        <file alias="dancingzombie/death_5.png">images/dancingzombie/death_5.png</file>
+        <file alias="dancingzombie/death_6.png">images/dancingzombie/death_6.png</file>
+        <file alias="dancingzombie/death_7.png">images/dancingzombie/death_7.png</file>
 
         <file alias="eater/walk_0.png">images/eater/walk_0.png</file>
         <file alias="eater/walk_1.png">images/eater/walk_1.png</file>
@@ -26,13 +98,11 @@
         <file alias="eater/death_6.png">images/eater/death_6.png</file>
         <file alias="eater/death_7.png">images/eater/death_7.png</file>
 
-
         <file alias="chicken/walk_0.png">images/chicken/walk_0.png</file>
         <file alias="chicken/walk_1.png">images/chicken/walk_1.png</file>
         <file alias="chicken/walk_2.png">images/chicken/walk_2.png</file>
         <file alias="chicken/walk_3.png">images/chicken/walk_3.png</file>
         <file alias="chicken/attack_0.png">images/chicken/attack_0.png</file>
-
         <file alias="chicken/attack_1.png">images/chicken/attack_1.png</file>
         <file alias="chicken/attack_2.png">images/chicken/attack_2.png</file>
         <file alias="chicken/attack_3.png">images/chicken/attack_3.png</file>
@@ -66,29 +136,6 @@
         <file alias="kun/death_6.png">images/kun/death_6.png</file>
         <file alias="kun/death_7.png">images/kun/death_7.png</file>
 
-        <file alias="kun/walk_0.png">images/kun/walk_0.png</file>
-        <file alias="kun/walk_1.png">images/kun/walk_1.png</file>
-        <file alias="kun/walk_2.png">images/kun/walk_2.png</file>
-        <file alias="kun/walk_3.png">images/kun/walk_3.png</file>
-        <file alias="kun/walk_4.png">images/kun/walk_4.png</file>
-        <file alias="kun/walk_5.png">images/kun/walk_5.png</file>
-        <file alias="kun/walk_6.png">images/kun/walk_6.png</file>
-        <file alias="kun/walk_7.png">images/kun/walk_7.png</file>
-        <file alias="kun/attack_0.png">images/kun/attack_0.png</file>
-        <file alias="kun/attack_1.png">images/kun/attack_1.png</file>
-        <file alias="kun/attack_2.png">images/kun/attack_2.png</file>
-        <file alias="kun/attack_3.png">images/kun/attack_3.png</file>
-        <file alias="kun/attack_4.png">images/kun/attack_4.png</file>
-        <file alias="kun/attack_5.png">images/kun/attack_5.png</file>
-        <file alias="kun/death_0.png">images/kun/death_0.png</file>
-        <file alias="kun/death_1.png">images/kun/death_1.png</file>
-        <file alias="kun/death_2.png">images/kun/death_2.png</file>
-        <file alias="kun/death_3.png">images/kun/death_3.png</file>
-        <file alias="kun/death_4.png">images/kun/death_4.png</file>
-        <file alias="kun/death_5.png">images/kun/death_5.png</file>
-        <file alias="kun/death_6.png">images/kun/death_6.png</file>
-        <file alias="kun/death_7.png">images/kun/death_7.png</file>
-
         <file alias="bengbear/idle_0.png">images/bengbear/idle_0.png</file>
         <file alias="bengbear/idle_1.png">images/bengbear/idle_1.png</file>
         <file alias="bengbear/idle_2.png">images/bengbear/idle_2.png</file>
@@ -97,6 +144,15 @@
         <file alias="bengbear/idle_5.png">images/bengbear/idle_5.png</file>
         <file alias="bengbear/idle_6.png">images/bengbear/idle_6.png</file>
         <file alias="bengbear/idle_7.png">images/bengbear/idle_7.png</file>
+
+        <file alias="firefan/idle_0.png">images/firefan/idle_0.png</file>
+        <file alias="firefan/idle_1.png">images/firefan/idle_1.png</file>
+        <file alias="firefan/idle_2.png">images/firefan/idle_2.png</file>
+        <file alias="firefan/idle_3.png">images/firefan/idle_3.png</file>
+        <file alias="firefan/idle_4.png">images/firefan/idle_4.png</file>
+        <file alias="firefan/idle_5.png">images/firefan/idle_5.png</file>
+        <file alias="firefan/idle_6.png">images/firefan/idle_6.png</file>
+        <file alias="firefan/idle_7.png">images/firefan/idle_7.png</file>
 
         <file alias="kimsunflower/idle_0.png">images/kimsunflower/idle_0.png</file>
         <file alias="kimsunflower/idle_1.png">images/kimsunflower/idle_1.png</file>
@@ -109,16 +165,6 @@
         <file alias="kimsunflower/produce_4.png">images/kimsunflower/produce_4.png</file>
         <file alias="kimsunflower/produce_5.png">images/kimsunflower/produce_5.png</file>
         <file alias="kimsunflower/produce_6.png">images/kimsunflower/produce_6.png</file>
-
-        <file alias="firefan/idle_0.png">images/firefan/idle_0.png</file>
-        <file alias="firefan/idle_1.png">images/firefan/idle_1.png</file>
-        <file alias="firefan/idle_2.png">images/firefan/idle_2.png</file>
-        <file alias="firefan/idle_3.png">images/firefan/idle_3.png</file>
-        <file alias="firefan/idle_4.png">images/firefan/idle_4.png</file>
-        <file alias="firefan/idle_5.png">images/firefan/idle_5.png</file>
-        <file alias="firefan/idle_6.png">images/firefan/idle_6.png</file>
-        <file alias="firefan/idle_7.png">images/firefan/idle_7.png</file>
-
 
         <file alias="rainchili/idle_0.png">images/rainchili/idle_0.png</file>
     </qresource>
