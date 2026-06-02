@@ -1,6 +1,7 @@
 #pragma once
 #include "GameEntity.h"
 #include <QElapsedTimer>
+#include <QTimer>
 
 class Plant;
 
@@ -37,14 +38,16 @@ public:
 
 class DancingZombie : public Zombie
 {
-protected:
-    int spawnInterval = 8000;
-    QElapsedTimer spawnTimer;
+    Q_OBJECT
 public:
     DancingZombie(int row_, int col_);
     ~DancingZombie();
-    bool readyToSpawn() const;
-    void resetSpawnTimer();
+    void stopSpawnTimer();
+    void startSpawnTimer();
+signals:
+    void readyToSpawn(DancingZombie* self);
+private:
+    QTimer* spawnTimer;
 };
 
 class DancerZombie : public Zombie

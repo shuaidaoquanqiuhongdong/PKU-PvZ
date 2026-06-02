@@ -1,6 +1,6 @@
 #include "GameEntity.h"
 
-GameEntity::GameEntity(int r, int c, int hp_, EntityType entityType_) : row(r), col(c), hp(hp_), maxHp(hp_), alive(true), entityType(entityType_) {}
+GameEntity::GameEntity(int r, int c, int hp_, EntityType entityType_) : row(r), col(c), hp(hp_), maxHp(hp_), alive(true), deathAnimDone(false), entityType(entityType_) {}
 
 GameEntity::~GameEntity() {}
 

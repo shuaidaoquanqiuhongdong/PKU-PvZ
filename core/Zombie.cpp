@@ -1,11 +1,12 @@
 #include "Zombie.h"
 #include "Plant.h"
+#include "GameConfig.h"
 
 Zombie::Zombie(int r, int c, int hp_, int speed_)
     : GameEntity(r, c, hp_, EntityType::Zombie)
     , speed(speed_)
-    , attackDamage(20)
-    , attackInterval(1000)
+    , attackDamage(GameConfig::ZombieAttackDamage)
+    , attackInterval(GameConfig::ZombieAttackInterval)
     , attacking(false)
     , targetPlant(nullptr)
 {
@@ -25,16 +26,44 @@ void Zombie::updateEntity()
         moveLeft();
 }
 
-GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, 300, 1) {}
+GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, GameConfig::GenziZombieHp, GameConfig::GenziZombieSpeed) {}
 
 GenziZombie::~GenziZombie() {}
 
-DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, 200, 2)
+DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, GameConfig::DancingZombieHp, GameConfig::DancingZombieSpeed)
 {
-    spawnTimer.start();
+    spawnTimer = new QTimer(this);
+    spawnTimer->setSingleShot(false);
+
+    // 随机初始延迟 3~7s，让不同舞王僵尸的生成节奏错开
+    int initialDelay = 3000 + rand() % 4000;
+    QTimer::singleShot(initialDelay, this, [this]() {
+        if (isAlive() && !isAttacking())
+            emit readyToSpawn(this);
+        spawnTimer->start(GameConfig::DancingZombieSpawnInterval);
+    });
+
+    connect(spawnTimer, &QTimer::timeout, this, [this]() {
+        if (isAlive() && !isAttacking())
+            emit readyToSpawn(this);
+    });
 }
 
-DancingZombie::~DancingZombie() {}
+DancingZombie::~DancingZombie()
+{
+    spawnTimer->stop();
+}
+
+void DancingZombie::stopSpawnTimer()
+{
+    spawnTimer->stop();
+}
+
+void DancingZombie::startSpawnTimer()
+{
+    if (!spawnTimer->isActive())
+        spawnTimer->start();
+}
 
 void Zombie::startAttack(Plant* plant)
 {
@@ -70,13 +99,6 @@ void Zombie::resetAttackTimer()
 
 int Zombie::getAttackDamage() const { return attackDamage; }
 
-bool DancingZombie::readyToSpawn() const
-{
-    return spawnTimer.elapsed() >= spawnInterval;
-}
-
-void DancingZombie::resetSpawnTimer() { spawnTimer.start(); }
-
-DancerZombie::DancerZombie(int row_, int col_) : Zombie(row_, col_, 100, 2) {}
+DancerZombie::DancerZombie(int row_, int col_) : Zombie(row_, col_, GameConfig::DancerZombieHp, GameConfig::DancerZombieSpeed) {}
 
 DancerZombie::~DancerZombie() {}

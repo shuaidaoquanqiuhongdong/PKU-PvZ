@@ -815,8 +815,13 @@ void AnimationManager::setupSunAnimations(Sun* sun)
         return;
     }
 
-    QVector<QPixmap> idleFrames =
-        ResourceManager::loadFrames(":/images/other/sunligt", "sun", 3);
+
+    QVector<QPixmap> idleFrames;
+    QPixmap sunPixmap = ResourceManager::loadPixmap(":/images/other/sunlight.png");
+    if (!sunPixmap.isNull()) {
+        idleFrames.append(sunPixmap);
+    }
+
 
     addSpriteAnimation(
         sun,

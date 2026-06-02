@@ -1,19 +1,7 @@
 <RCC>
     <qresource prefix="/images">
         <file alias="other/lawn.png">images/other/lawn.png</file>
-        <file alias="background/lawn.png">images/other/lawn.png</file>
-
-        <file alias="other/sunligt/sun_0.png">images/other/sunligt/sun_0.png</file>
-        <file alias="other/sunligt/sun_1.png">images/other/sunligt/sun_1.png</file>
-        <file alias="other/sunligt/sun_2.png">images/other/sunligt/sun_2.png</file>
-
-        <file alias="bullets/pea.png">images/bullets/pea.png</file>
-
-        <file alias="effects/place_0.png">images/effects/place_0.png</file>
-        <file alias="effects/place_1.png">images/effects/place_1.png</file>
-        <file alias="effects/pea_hit_0.png">images/effects/pea_hit_0.png</file>
-        <file alias="effects/pea_hit_1.png">images/effects/pea_hit_1.png</file>
-        <file alias="effects/pea_hit_2.png">images/effects/pea_hit_2.png</file>
+        <file alias="other/sunlight.png">images/other/sunlight.png</file>
 
         <file alias="eater/walk_0.png">images/eater/walk_0.png</file>
         <file alias="eater/walk_1.png">images/eater/walk_1.png</file>
@@ -38,11 +26,13 @@
         <file alias="eater/death_6.png">images/eater/death_6.png</file>
         <file alias="eater/death_7.png">images/eater/death_7.png</file>
 
+
         <file alias="chicken/walk_0.png">images/chicken/walk_0.png</file>
         <file alias="chicken/walk_1.png">images/chicken/walk_1.png</file>
         <file alias="chicken/walk_2.png">images/chicken/walk_2.png</file>
         <file alias="chicken/walk_3.png">images/chicken/walk_3.png</file>
         <file alias="chicken/attack_0.png">images/chicken/attack_0.png</file>
+
         <file alias="chicken/attack_1.png">images/chicken/attack_1.png</file>
         <file alias="chicken/attack_2.png">images/chicken/attack_2.png</file>
         <file alias="chicken/attack_3.png">images/chicken/attack_3.png</file>
@@ -52,6 +42,29 @@
         <file alias="chicken/death_2.png">images/chicken/death_2.png</file>
         <file alias="chicken/death_3.png">images/chicken/death_3.png</file>
         <file alias="chicken/death_4.png">images/chicken/death_4.png</file>
+
+        <file alias="kun/walk_0.png">images/kun/walk_0.png</file>
+        <file alias="kun/walk_1.png">images/kun/walk_1.png</file>
+        <file alias="kun/walk_2.png">images/kun/walk_2.png</file>
+        <file alias="kun/walk_3.png">images/kun/walk_3.png</file>
+        <file alias="kun/walk_4.png">images/kun/walk_4.png</file>
+        <file alias="kun/walk_5.png">images/kun/walk_5.png</file>
+        <file alias="kun/walk_6.png">images/kun/walk_6.png</file>
+        <file alias="kun/walk_7.png">images/kun/walk_7.png</file>
+        <file alias="kun/attack_0.png">images/kun/attack_0.png</file>
+        <file alias="kun/attack_1.png">images/kun/attack_1.png</file>
+        <file alias="kun/attack_2.png">images/kun/attack_2.png</file>
+        <file alias="kun/attack_3.png">images/kun/attack_3.png</file>
+        <file alias="kun/attack_4.png">images/kun/attack_4.png</file>
+        <file alias="kun/attack_5.png">images/kun/attack_5.png</file>
+        <file alias="kun/death_0.png">images/kun/death_0.png</file>
+        <file alias="kun/death_1.png">images/kun/death_1.png</file>
+        <file alias="kun/death_2.png">images/kun/death_2.png</file>
+        <file alias="kun/death_3.png">images/kun/death_3.png</file>
+        <file alias="kun/death_4.png">images/kun/death_4.png</file>
+        <file alias="kun/death_5.png">images/kun/death_5.png</file>
+        <file alias="kun/death_6.png">images/kun/death_6.png</file>
+        <file alias="kun/death_7.png">images/kun/death_7.png</file>
 
         <file alias="kun/walk_0.png">images/kun/walk_0.png</file>
         <file alias="kun/walk_1.png">images/kun/walk_1.png</file>
@@ -105,6 +118,7 @@
         <file alias="firefan/idle_5.png">images/firefan/idle_5.png</file>
         <file alias="firefan/idle_6.png">images/firefan/idle_6.png</file>
         <file alias="firefan/idle_7.png">images/firefan/idle_7.png</file>
+
 
         <file alias="rainchili/idle_0.png">images/rainchili/idle_0.png</file>
     </qresource>

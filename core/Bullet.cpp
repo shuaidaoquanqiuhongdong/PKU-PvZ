@@ -9,8 +9,10 @@ Bullet::~Bullet() {}
 void Bullet::updateEntity()
 {
     moveBy(speed, 0);
-    if (pos().x() > GameConfig::SceneWidth)
+    if (pos().x() > GameConfig::SceneWidth) {
         alive = false;
+        deathAnimDone = true;
+    }
 }
 
 bool Bullet::collideWithZombie(Zombie* zombie)

@@ -17,6 +17,10 @@ GameEngine::GameEngine()
     connect(zombieSpawnTimer, &QTimer::timeout, this, &GameEngine::spawnZombie);
     spawnedZombieCount = 0;
     maxZombieCount = 10;
+    currentWave = 0;
+    totalWave = 3;
+    zombiesInCurrentWave = 0;
+    waveCleared = false;
 }
 
 void GameEngine::addPlant(Plant* plant)
@@ -40,15 +44,18 @@ void GameEngine::updateGame()
         zombie->updateEntity();
     updateBullets();
     cleanupDeadEntities();
+    checkWaveTransition();
     checkGameResult();
 }
 
 void GameEngine::start()
 {
     running = true;
+    currentWave = 0;
+    waveCleared = false;
     gameLoopTimer->start(GameConfig::GameLoopInterval);
     sunGenerateTimer->start(GameConfig::SunGenerateInterval);
-    zombieSpawnTimer->start(GameConfig::ZombieSpawnInterval);
+    startNextWave();
 }
 
 void GameEngine::pause()
@@ -58,6 +65,11 @@ void GameEngine::pause()
     gameLoopTimer->stop();
     sunGenerateTimer->stop();
     zombieSpawnTimer->stop();
+    for (auto* z : zombies)
+    {
+        if (auto* d = dynamic_cast<DancingZombie*>(z))
+            d->stopSpawnTimer();
+    }
 }
 
 void GameEngine::resume()
@@ -67,6 +79,11 @@ void GameEngine::resume()
     gameLoopTimer->start();
     sunGenerateTimer->start();
     zombieSpawnTimer->start();
+    for (auto* z : zombies)
+    {
+        if (auto* d = dynamic_cast<DancingZombie*>(z))
+            d->startSpawnTimer();
+    }
 }
 
 void GameEngine::stop()
@@ -190,7 +207,42 @@ void GameEngine::checkRainchiliFuse()
 
         plant->takeDamage(9999);
         if (!plant->isAlive())
+        {
+            gridManager->removePlant(plant->getRow(), plant->getCol());
             emit entityDied(plant);
+        }
+    }
+}
+
+void GameEngine::onDancingZombieSpawn(DancingZombie* dancing)
+{
+    if (!running) return;
+    if (!dancing || !dancing->isAlive()) return;
+
+    int baseRow = dancing->getRow();
+    int baseCol = gridManager->scenePosToCell(dancing->pos()).x();
+
+    struct { int dRow; int dCol; } offsets[] = {
+        {-1,  0}, // 上
+        { 1,  0}, // 下
+        { 0, -1}, // 左
+        { 0,  1}, // 右
+    };
+
+    for (auto& off : offsets)
+    {
+        int spawnRow = baseRow + off.dRow;
+        int spawnCol = baseCol + off.dCol;
+
+        if (!gridManager->isValidCell(spawnRow, spawnCol))
+            continue;
+
+        auto* dancer = new DancerZombie(spawnRow, spawnCol);
+        dancer->setPos(gridManager->cellToScenePos(spawnRow, spawnCol));
+        zombies.append(dancer);
+
+        emit entityCreated(dancer);
+        emit entityAnimationChanged(dancer, AnimationState::Walk);
     }
 }
 
@@ -206,11 +258,11 @@ void GameEngine::checkCollisions()
             {
                 zombie->takeDamage(bullet->getDamage());
                 bullet->die();
+                bullet->markDeathAnimDone();
                 emit bulletHit(bullet->pos());
                 if(!zombie->isAlive())
                 {
                     emit entityDied(zombie);
-                    // 从 GridManager 移除（如果有植物在它面前）
                 }
                 break;
             }
@@ -220,35 +272,34 @@ void GameEngine::checkCollisions()
 
 void GameEngine::cleanupDeadEntities()
 {
-    // 子弹
     for (int i = bullets.size() - 1; i >= 0; --i)
     {
-        if (!bullets[i]->isAlive())
+        if (!bullets[i]->isAlive() && bullets[i]->isDeathAnimDone())
         {
             delete bullets[i];
             bullets.removeAt(i);
         }
     }
-    //阳光
     for (int i = suns.size() - 1; i >= 0; --i)
     {
-        if(!suns[i]->isAlive())
+        if (!suns[i]->isAlive() && suns[i]->isDeathAnimDone())
         {
             delete suns[i];
             suns.removeAt(i);
         }
     }
-    // 僵尸
     for (int i = zombies.size() - 1; i >= 0; --i)
     {
-        if (!zombies[i]->isAlive()) {
+        if (!zombies[i]->isAlive() && zombies[i]->isDeathAnimDone())
+        {
             delete zombies[i];
             zombies.removeAt(i);
         }
     }
-    // 植物
-    for (int i = plants.size() - 1; i >= 0; --i){
-        if(!plants[i]->isAlive()){
+    for (int i = plants.size() - 1; i >= 0; --i)
+    {
+        if (!plants[i]->isAlive() && plants[i]->isDeathAnimDone())
+        {
             gridManager->removePlant(plants[i]->getRow(), plants[i]->getCol());
             delete plants[i];
             plants.removeAt(i);
@@ -260,7 +311,7 @@ void GameEngine::generateSun()
 {
     int r = rand() % GameConfig::Rows;
     int c = rand() % GameConfig::Cols;
-    Sun* sun = new Sun(25);
+    Sun* sun = new Sun(GameConfig::SkySunValue);
     QPointF pos = gridManager->cellToScenePos(r, c);
     sun->setPos(pos);
     suns.append(sun);
@@ -271,29 +322,42 @@ void GameEngine::generateSun()
 
 void GameEngine::spawnZombie()
 {
-    if (spawnedZombieCount >= maxZombieCount)
+    if (spawnedZombieCount >= maxZombieCount || waveCleared)
         return;
 
     int row = rand() % GameConfig::Rows;
 
+    // 每波僵尸构成不同：Wave 1 纯普通，后面波次混入舞王
     Zombie* zombie = nullptr;
-    if (spawnedZombieCount < 5)
+    if (currentWave == 1)
+    {
         zombie = new GenziZombie(row, GameConfig::Cols - 1);
+    }
     else
-        zombie = (rand() % 2 == 0)
-                     ? static_cast<Zombie*>(new GenziZombie(row, GameConfig::Cols - 1))
-                     : static_cast<Zombie*>(new DancingZombie(row, GameConfig::Cols - 1));
+    {
+        zombie = (rand() % 3 == 0)
+                     ? static_cast<Zombie*>(new DancingZombie(row, GameConfig::Cols - 1))
+                     : static_cast<Zombie*>(new GenziZombie(row, GameConfig::Cols - 1));
+    }
 
     QPointF pos = gridManager->cellToScenePos(row, GameConfig::Cols - 1);
     zombie->setPos(pos);
     zombies.append(zombie);
     spawnedZombieCount++;
 
+    // 舞王僵尸：连接独立的生成信号
+    if (auto* dancing = dynamic_cast<DancingZombie*>(zombie))
+    {
+        connect(dancing, &DancingZombie::readyToSpawn,
+                this, &GameEngine::onDancingZombieSpawn);
+    }
+
     emit entityCreated(zombie);
     emit entityAnimationChanged(zombie, AnimationState::Walk);
 
-    // 渐进加速：初始10s，每生一只缩短300ms，最快3s
-    int newInterval = qMax(3000, GameConfig::ZombieSpawnInterval - spawnedZombieCount * 300);
+    // 波内渐进加速：第一只最慢，越往后越快
+    int baseInterval = 18000 - (currentWave - 1) * 5000;  // Wave1:18s Wave2:13s Wave3:8s
+    int newInterval = qMax(2000, baseInterval - spawnedZombieCount * 1500);
     zombieSpawnTimer->setInterval(newInterval);
 }
 
@@ -311,12 +375,11 @@ void GameEngine::removeEntitySafely(GameEntity* entity)
 {
     if (!entity) return;
 
-    // 从场景移除（如果还在）
+    entity->markDeathAnimDone();
+
     if (entity->scene()) {
         entity->scene()->removeItem(entity);
     }
-
-    // 不 delete — 等 cleanupDeadEntities 统一处理
 }
 
 void GameEngine::checkZombieAttackPlant()
@@ -337,7 +400,7 @@ void GameEngine::checkZombieAttackPlant()
         if (plantAhead)
         {
             qreal dx = zombie->pos().x() - plantAhead->pos().x();
-            if (dx > 0 && dx < 60)
+            if (dx >= 0 && dx < 60)
             {
                 if (!zombie->isAttacking())
                 {
@@ -352,10 +415,18 @@ void GameEngine::checkZombieAttackPlant()
                     if (!plantAhead->isAlive())
                     {
                         emit entityDied(plantAhead);
+                        // 植物死亡后立即从网格移除，防止后续帧误判
+                        gridManager->removePlant(row, plantAhead->getCol());
                         zombie->stopAttack();
                         emit entityAnimationChanged(zombie, AnimationState::Walk);
                     }
                 }
+            }
+            else if (zombie->isAttacking())
+            {
+                // 有植物但距离不够 → 僵尸不应保持攻击状态（目标可能刚死，更远的植物还未接近）
+                zombie->stopAttack();
+                emit entityAnimationChanged(zombie, AnimationState::Walk);
             }
         }
         else
@@ -379,13 +450,58 @@ void GameEngine::checkGameResult()
             return;
         }
     }
-    bool allDead = true;
+}
+
+void GameEngine::checkWaveTransition()
+{
+    if (waveCleared) return;
+
+    // 当前波次僵尸还没刷完
+    if (spawnedZombieCount < maxZombieCount) return;
+
+    // 还有活着的僵尸
     for (auto* z : zombies)
     {
-        if (z->isAlive()) { allDead = false; break; }
+        if (z->isAlive()) return;
     }
-    if (allDead && spawnedZombieCount >= maxZombieCount)
+
+    // 当前波次清除
+    waveCleared = true;
+    zombieSpawnTimer->stop();
+
+    if (currentWave >= totalWave)
     {
+        // 所有波次完成，胜利
         emit gameOver(true);
+        return;
     }
+
+    // 波间停顿后开始下一波
+    QTimer::singleShot(5000, this, [this]() {
+        if (running)
+            startNextWave();
+    });
+}
+
+void GameEngine::startNextWave()
+{
+    currentWave++;
+    waveCleared = false;
+    spawnedZombieCount = 0;
+
+    // 每波僵尸数量递增，后期僵尸潮
+    switch (currentWave)
+    {
+    case 1: maxZombieCount = 6;  break;
+    case 2: maxZombieCount = 12; break;
+    case 3: maxZombieCount = 20; break;
+    default: maxZombieCount = 6; break;
+    }
+
+    // 初始间隔长，给玩家部署时间，波内由 spawnZombie 渐进加速
+    int initialInterval = (currentWave == 1) ? 18000 :
+                          (currentWave == 2) ? 13000 : 8000;
+    zombieSpawnTimer->start(initialInterval);
+
+    emit waveChanged(currentWave, totalWave);
 }
