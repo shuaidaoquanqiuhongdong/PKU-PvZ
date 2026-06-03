@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("PvZLiteQt - 植物大战僵尸");
 
     constexpr int BaseW = 1408;
-    constexpr int BaseH = 888;
+    constexpr int BaseH = 960;
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen)
     {
@@ -206,7 +206,7 @@ void MainWindow::startGameInternal()
     {
         gameView->applyScale(scaleFactor);
         topBar->setFixedHeight(static_cast<int>(50 * scaleFactor));
-        cardPanel->setFixedHeight(static_cast<int>(70 * scaleFactor));
+        cardPanel->setFixedHeight(static_cast<int>(105 * scaleFactor));
     }
 
     gameView->initScene();
