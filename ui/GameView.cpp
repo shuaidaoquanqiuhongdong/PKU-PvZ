@@ -1,6 +1,7 @@
 #include "GameView.h"
 #include "core/GameEntity.h"
 #include "core/GameConfig.h"
+#include "GraphicsButton.h"
 #include <QMouseEvent>
 #include <QPainter>
 #include <QGraphicsRectItem>
@@ -246,7 +247,20 @@ void GameView::setPaused(bool paused)
         textItem->setDefaultTextColor(Qt::white);
         textItem->setPos(
             (GameConfig::SceneWidth - textItem->boundingRect().width()) / 2.0,
-            (GameConfig::SceneHeight - textItem->boundingRect().height()) / 2.0);
+            GameConfig::SceneHeight / 2.0 - 100
+        );
+
+        auto* backButton = new GraphicsButton("返回主菜单", pauseOverlay);
+        backButton->setSize(200, 50);
+        backButton->setNormalColor(QColor(76, 175, 80));
+        backButton->setHoverColor(QColor(102, 187, 106));
+        backButton->setPos(
+            (GameConfig::SceneWidth - 200) / 2.0,
+            GameConfig::SceneHeight / 2.0 + 20
+        );
+        connect(backButton, &GraphicsButton::clicked, this, [this]() {
+            emit returnToMenuClicked();
+        });
 
         scene->addItem(pauseOverlay);
     }

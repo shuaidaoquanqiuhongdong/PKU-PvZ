@@ -28,6 +28,7 @@ public:
 signals:
     void cellClicked(int row, int col);
     void zombieCellClicked(int row, int col);
+    void returnToMenuClicked();
 protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;

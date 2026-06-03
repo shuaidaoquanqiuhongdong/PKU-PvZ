@@ -137,6 +137,10 @@ void MainWindow::startGameInternal()
         gameView->setPaused(paused);
     });
 
+    connect(gameView, &GameView::returnToMenuClicked, this, [=]() {
+        goToMainMenu();
+    });
+
     QString resPath = ":/images/";
     if (currentMode == ClassicMode) {
         cardPanel->addPlantCard("Firefan",      "不知火蛙",   100, resPath + "firefan/idle_0.png");
