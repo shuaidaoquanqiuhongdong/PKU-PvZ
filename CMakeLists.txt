@@ -25,6 +25,8 @@ qt_add_executable(PvZLiteQt
     ui/GraphicsButton.h
     ui/GameView.cpp
     ui/GameView.h
+    ui/GuideWidget.cpp
+    ui/GuideWidget.h
     ${PvZLiteQt_RESOURCES}
     ${SOURCES}
 )

@@ -3,6 +3,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include "ui/MainMenuWidget.h"
+#include "ui/GuideWidget.h"
 #include "ui/GamePageWidget.h"
 #include "ui/GameOverWidget.h"
 #include "core/GameEngine.h"
@@ -39,7 +40,9 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(stackedWidget);
 
     mainMenuWidget = new MainMenuWidget(this);
+    guideWidget = new GuideWidget(this);
     stackedWidget->addWidget(mainMenuWidget);
+    stackedWidget->addWidget(guideWidget);
 
     showMainMenu();
 
@@ -47,8 +50,12 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::startGame);
     connect(mainMenuWidget, &MainMenuWidget::zombieModeClicked,
             this, &MainWindow::startZombieMode);
+    connect(mainMenuWidget, &MainMenuWidget::guideClicked,
+            this, &MainWindow::showGuide);
     connect(mainMenuWidget, &MainMenuWidget::exitClicked,
             this, &QMainWindow::close);
+    connect(guideWidget, &GuideWidget::backToMenuClicked,
+            this, &MainWindow::showMainMenu);
 }
 
 MainWindow::~MainWindow() {}
@@ -68,6 +75,11 @@ void MainWindow::startZombieMode()
 {
     currentMode = ZombieMode;
     startGameInternal();
+}
+
+void MainWindow::showGuide()
+{
+    stackedWidget->setCurrentWidget(guideWidget);
 }
 
 void MainWindow::startGameInternal()
@@ -167,7 +179,7 @@ void MainWindow::startGameInternal()
             }
         });
     } else {
-        cardPanel->addZombieCard("GenziZombie",   "普通僵尸",   50,  resPath + "genzizombie/idle_0.png");
+        cardPanel->addZombieCard("GenziZombie",   "艮子僵尸",   50,  resPath + "genzizombie/idle_0.png");
         cardPanel->addZombieCard("DancingZombie", "舞王僵尸",   100, resPath + "dancingzombie/idle_0.png");
 
         connect(gameView, &GameView::zombieCellClicked, this, [=](int row, int col) {

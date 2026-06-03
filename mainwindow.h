@@ -9,6 +9,7 @@
 class MainMenuWidget;
 class GamePageWidget;
 class GameOverWidget;
+class GuideWidget;
 class GameEngine;
 class AnimationManager;
 
@@ -23,6 +24,7 @@ public slots:
     void showMainMenu();
     void startGame();
     void startZombieMode();
+    void showGuide();
     void showGameOver(bool win);
     void restartGame();
     void goToMainMenu();
@@ -34,6 +36,7 @@ private:
     GameMode currentMode;
     QStackedWidget* stackedWidget;
     MainMenuWidget* mainMenuWidget;
+    GuideWidget* guideWidget;
     GamePageWidget* gamePageWidget;
     GameOverWidget* gameOverWidget;
     GameEngine* gameEngine;
