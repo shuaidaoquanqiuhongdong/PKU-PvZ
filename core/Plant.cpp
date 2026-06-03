@@ -93,5 +93,5 @@ void Rainchili::startFuse()
 
 bool Rainchili::readyToExplode() const
 {
-    return fuseTimer.isValid() && fuseTimer.elapsed() >= 1500;
+    return fuseTimer.isValid() && fuseTimer.elapsed() >= GameConfig::RainchiliFuseTime;
 }
