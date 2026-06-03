@@ -266,6 +266,7 @@ void GameEngine::onDancingZombieSpawn(DancingZombie* dancing)
 {
     if (!running) return;
     if (!dancing || !dancing->isAlive()) return;
+    if (dancing->reachedHome()) return;
 
     int baseRow = dancing->getRow();
     int baseCol = gridManager->scenePosToCell(dancing->pos()).x();
