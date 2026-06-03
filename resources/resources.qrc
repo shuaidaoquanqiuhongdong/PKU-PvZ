@@ -22,13 +22,20 @@
         <file alias="other/sunlight.png">images/other/sunlight.png</file>
 
         <file alias="bullets/pea.png">images/bullets/pea.png</file>
+	<file alias="bullets/pea_0.png">images/bullets/pea_0.png</file>
+	<file alias="bullets/pea_1.png">images/bullets/pea_1.png</file>
+	<file alias="bullets/pea_2.png">images/bullets/pea_2.png</file>
+	<file alias="bullets/pea_3.png">images/bullets/pea_3.png</file>
+	<file alias="bullets/pea_4.png">images/bullets/pea_4.png</file>
+	<file alias="bullets/pea_5.png">images/bullets/pea_5.png</file>
+	<file alias="bullets/pea_6.png">images/bullets/pea_6.png</file>
+	<file alias="bullets/pea_7.png">images/bullets/pea_7.png</file>
+	<file alias="bullets/pea_8.png">images/bullets/pea_8.png</file>
+
 
         <file alias="effects/place_0.png">images/effects/place_0.png</file>
         <file alias="effects/place_1.png">images/effects/place_1.png</file>
-        <file alias="effects/pea_hit_0.png">images/effects/pea_hit_0.png</file>
-        <file alias="effects/pea_hit_1.png">images/effects/pea_hit_1.png</file>
-        <file alias="effects/pea_hit_2.png">images/effects/pea_hit_2.png</file>
-
+       
         <file alias="genzizombie/walk_0.png">images/genzizombie/walk_0.png</file>
         <file alias="genzizombie/walk_1.png">images/genzizombie/walk_1.png</file>
         <file alias="genzizombie/walk_2.png">images/genzizombie/walk_2.png</file>

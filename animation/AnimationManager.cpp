@@ -38,7 +38,6 @@ QString normalizeResourceKey(QString key)
         return QStringLiteral("dancingzombie");
     }
 
-    // 伴舞僵尸当前没有独立素材，复用普通僵尸素材，保证舞王召唤后有动画。
     if (key.contains(QStringLiteral("dancerzombie")) ||
         key.contains(QStringLiteral("dancer"))) {
         return QStringLiteral("chicken");
@@ -552,29 +551,7 @@ void AnimationManager::playPlantPlaceEffect(Plant* plant)
 
 void AnimationManager::playBulletHitEffect(QPointF pos)
 {
-    if (!lastKnownScene) {
-        qWarning() << "AnimationManager: no scene cached for bullet hit effect.";
-        return;
-    }
-
-    QVector<QPixmap> frames =
-        ResourceManager::loadFrames(":/images/effects", "pea_hit", 3);
-
-    auto* effect = new EffectItem(frames, 70, this);
-    effect->setPos(pos);
-    effect->setZValue(EffectLayer);
-    lastKnownScene->addItem(effect);
-
-    connect(effect, &EffectItem::finished, this, [this, effect]() {
-        if (effect->scene()) {
-            effect->scene()->removeItem(effect);
-        }
-
-        emit effectFinished(effect);
-        effect->deleteLater();
-    });
-
-    effect->play();
+    Q_UNUSED(pos);
 }
 
 void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF end)
@@ -870,27 +847,29 @@ void AnimationManager::setupBulletAnimations(Bullet* bullet)
         return;
     }
 
-    QPixmap pixmap = ResourceManager::loadPixmap(":/images/bullets/pea.png");
-    QVector<QPixmap> moveFrames;
-    moveFrames.append(pixmap);
+    QVector<QPixmap> moveFrames =
+        ResourceManager::loadFrames(":/images/bullets", "pea", 9);
 
     addSpriteAnimation(
         bullet,
         AnimationState::Move,
         moveFrames,
-        100,
-        true
+        80,     // 数值越小播放越快；可以改成 100 或 120
+        true    // 循环播放
         );
 
-    bullet->setPixmap(pixmap);
-    bullet->setOffset(
-        -pixmap.width() / 2.0,
-        -pixmap.height() / 2.0
-        );
+    if (!moveFrames.isEmpty()) {
+        bullet->setPixmap(moveFrames.first());
+        bullet->setOffset(
+            -moveFrames.first().width() / 2.0,
+            -moveFrames.first().height() / 2.0
+            );
+    }
 
     bullet->setZValue(BulletLayer);
     currentStates[bullet] = AnimationState::Move;
 }
+
 
 void AnimationManager::setupSunAnimations(Sun* sun)
 {
