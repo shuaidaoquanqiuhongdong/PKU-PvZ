@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("PvZLiteQt - 植物大战僵尸");
 
     constexpr int BaseW = 1408;
-    constexpr int BaseH = 960;
+    constexpr int BaseH = 888;
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen)
     {
@@ -86,49 +86,6 @@ void MainWindow::startGameInternal()
     auto* cardPanel = gamePageWidget->getCardPanel();
     auto* topBar    = gamePageWidget->getTopBarWidget();
 
-    if (currentMode == ClassicMode) {
-        connect(gameView, &GameView::cellClicked, this, [=](int row, int col) {
-            QString type = cardPanel->selectedCardType();
-            if (!type.isEmpty()) {
-                bool ok = gameEngine->placePlant(type, row, col);
-                if (ok) {
-                    cardPanel->clearSelection();
-                    gameView->setPlantSelectionMode(false);
-                }
-            }
-        });
-
-        connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
-            if (isPlant && !cardType.isEmpty()) {
-                gameView->setPlantSelectionMode(true);
-            } else {
-                gameView->setPlantSelectionMode(false);
-            }
-        });
-    } else {
-        gameEngine->startZombieMode();
-        gameView->setZombieMode(true);
-
-        connect(gameView, &GameView::zombieCellClicked, this, [=](int row, int col) {
-            QString type = cardPanel->selectedCardType();
-            if (!type.isEmpty()) {
-                bool ok = gameEngine->placeZombie(type, row, col);
-                if (ok) {
-                    cardPanel->clearSelection();
-                    gameView->setPlantSelectionMode(false);
-                }
-            }
-        });
-
-        connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
-            if (!isPlant && !cardType.isEmpty()) {
-                gameView->setPlantSelectionMode(true);
-            } else {
-                gameView->setPlantSelectionMode(false);
-            }
-        });
-    }
-
     connect(gameEngine, &GameEngine::entityCreated,
             gameView, &GameView::addEntityItem);
     connect(gameEngine, &GameEngine::entityCreated,
@@ -186,23 +143,67 @@ void MainWindow::startGameInternal()
         cardPanel->addPlantCard("Kimsunflower", "金日葵",     50,  resPath + "kimsunflower/idle_0.png");
         cardPanel->addPlantCard("Bengbear",     "熊绷果",     50,  resPath + "bengbear/idle_0.png");
         cardPanel->addPlantCard("Rainchili",    "带派辣椒",   125, resPath + "rainchili/idle_0.png");
+
+        connect(gameView, &GameView::cellClicked, this, [=](int row, int col) {
+            QString type = cardPanel->selectedCardType();
+            if (!type.isEmpty()) {
+                bool ok = gameEngine->placePlant(type, row, col);
+                if (ok) {
+                    cardPanel->clearSelection();
+                    gameView->setPlantSelectionMode(false);
+                }
+            }
+        });
+
+        connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
+            if (isPlant && !cardType.isEmpty()) {
+                gameView->setPlantSelectionMode(true);
+            } else {
+                gameView->setPlantSelectionMode(false);
+            }
+        });
     } else {
         cardPanel->addZombieCard("GenziZombie",   "普通僵尸",   50,  resPath + "genzizombie/idle_0.png");
         cardPanel->addZombieCard("DancingZombie", "舞王僵尸",   100, resPath + "dancingzombie/idle_0.png");
+
+        connect(gameView, &GameView::zombieCellClicked, this, [=](int row, int col) {
+            QString type = cardPanel->selectedCardType();
+            if (!type.isEmpty()) {
+                bool ok = gameEngine->placeZombie(type, row, col);
+                if (ok) {
+                    cardPanel->clearSelection();
+                    gameView->setPlantSelectionMode(false);
+                }
+            }
+        });
+
+        connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
+            if (!isPlant && !cardType.isEmpty()) {
+                gameView->setPlantSelectionMode(true);
+            } else {
+                gameView->setPlantSelectionMode(false);
+            }
+        });
     }
 
     if (!qFuzzyCompare(scaleFactor, 1.0))
     {
         gameView->applyScale(scaleFactor);
         topBar->setFixedHeight(static_cast<int>(50 * scaleFactor));
-        cardPanel->setFixedHeight(static_cast<int>(105 * scaleFactor));
+        cardPanel->setFixedHeight(static_cast<int>(70 * scaleFactor));
     }
 
     gameView->initScene();
     topBar->setSunValue(150);
 
     stackedWidget->setCurrentWidget(gamePageWidget);
-    gameEngine->start();
+
+    if (currentMode == ZombieMode) {
+        gameView->setZombieMode(true);
+        gameEngine->startZombieMode();
+    } else {
+        gameEngine->start();
+    }
 
     bgmPlayer = new QMediaPlayer(this);
     auto* audioOutput = new QAudioOutput(this);
