@@ -21,6 +21,7 @@ public:
 
     QString getPlantType() const { return plantType; }
     int getCost() const { return cost; }
+    int biteCount = 0;
 
     // 攻击（默认不可攻击）
     virtual bool canAttack(const QList<Zombie*>& zombies) const;

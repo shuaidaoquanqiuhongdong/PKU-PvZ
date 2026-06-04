@@ -10,6 +10,7 @@ Plant::Plant(int r, int c, int hp_, int cost_, const QString& type)
     : GameEntity(r, c, hp_, EntityType::Plant)
     , cost(cost_)
     , plantType(type)
+    , biteCount(0)
 {}
 
 Plant::~Plant() {}
@@ -33,7 +34,7 @@ Firefan::Firefan(int r, int c)
 bool Firefan::canAttack(const QList<Zombie*>& zombies) const
 {
     for (auto* z : zombies) {
-        if (z->isAlive() && z->getRow() == row)
+        if (z->isAlive() && z->getRow() == row && z->pos().x() >= pos().x())
             return true;
     }
     return false;

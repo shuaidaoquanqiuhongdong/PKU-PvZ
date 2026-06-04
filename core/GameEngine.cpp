@@ -38,7 +38,7 @@ void GameEngine::addZombie(Zombie* zombie)
 void GameEngine::updateGame()
 {
     checkPlantAttack();
-    if (!zombieMode) checkSunProduction();
+    checkSunProduction();
     checkRainchiliFuse();
     checkZombieAttackPlant();
     checkCollisions();
@@ -68,7 +68,7 @@ void GameEngine::startZombieMode()
     sunValue = GameConfig::InitialSun;
     running = true;
     gameLoopTimer->start(GameConfig::GameLoopInterval);
-    sunGenerateTimer->start(GameConfig::SunGenerateInterval);
+    // 僵尸模式不需要天降阳光
 
     int plantCols = 4;
     for (int r = 0; r < GameConfig::Rows; ++r)
@@ -76,15 +76,25 @@ void GameEngine::startZombieMode()
         for (int c = 0; c < plantCols; ++c)
         {
             int roll = rand() % 100;
-            if (roll < 30) continue;
-
+            // 前排多放射手，后排多放向日葵和坚果
             Plant* plant = nullptr;
-            if (c <= 1 && roll < 70)
-                plant = new Firefan(r, c);
-            else if (roll < 60)
-                plant = new Kimsunflower(r, c);
-            else
-                plant = new Bengbear(r, c);
+            if (c <= 1) {
+                // 前排：60% 射手, 20% 向日葵, 20% 坚果
+                if (roll < 60)
+                    plant = new Firefan(r, c);
+                else if (roll < 80)
+                    plant = new Kimsunflower(r, c);
+                else
+                    plant = new Bengbear(r, c);
+            } else {
+                // 后排：30% 射手, 40% 向日葵, 30% 坚果
+                if (roll < 30)
+                    plant = new Firefan(r, c);
+                else if (roll < 70)
+                    plant = new Kimsunflower(r, c);
+                else
+                    plant = new Bengbear(r, c);
+            }
 
             plant->setPos(gridManager->cellToScenePos(r, c));
             plants.append(plant);
@@ -232,6 +242,7 @@ void GameEngine::updateBullets()
 
 void GameEngine::checkSunProduction()
 {
+    if (zombieMode) return;
     for (auto* plant : plants)
     {
         if (!plant->isAlive()) continue;
@@ -487,6 +498,24 @@ void GameEngine::checkZombieAttackPlant()
                 {
                     zombie->resetAttackTimer();
                     plantAhead->takeDamage(zombie->getAttackDamage());
+
+                    // 僵尸模式下，向日葵每被咬三口掉落一个阳光
+                    if (zombieMode && plantAhead->isAlive()
+                        && plantAhead->getPlantType() == "Kimsunflower")
+                    {
+                        plantAhead->biteCount++;
+                        if (plantAhead->biteCount % 3 == 0) {
+                            Sun* sun = new Sun(GameConfig::FlowerSunValue);
+                            QPointF pos = plantAhead->pos();
+                            pos.setX(pos.x() + (rand() % 40 - 20));
+                            pos.setY(pos.y() + (rand() % 40 - 20));
+                            sun->setPos(pos);
+                            suns.append(sun);
+                            emit entityCreated(sun);
+                            connect(sun, &Sun::clicked, this, &GameEngine::collectSun);
+                        }
+                    }
+
                     if (!plantAhead->isAlive())
                     {
                         emit entityDied(plantAhead);
