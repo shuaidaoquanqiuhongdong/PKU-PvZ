@@ -182,6 +182,24 @@ bool GameEngine::removePlant(int row, int col)
     return false;
 }
 
+bool GameEngine::shovelPlant(int row, int col)
+{
+    for (int i = plants.size() - 1; i >= 0; --i)
+    {
+        Plant* plant = plants[i];
+        if (plant->getRow() == row && plant->getCol() == col)
+        {
+            gridManager->removePlant(row, col);
+            emit entityDied(plant);
+            removeEntitySafely(plant);
+            plants.removeAt(i);
+            delete plant;
+            return true;
+        }
+    }
+    return false;
+}
+
 void GameEngine::checkPlantAttack()
 {
     for (auto* plant : plants)

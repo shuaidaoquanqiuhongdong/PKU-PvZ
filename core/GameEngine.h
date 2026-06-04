@@ -41,6 +41,7 @@ public:
     void stop();
     bool placePlant(QString plantType, int row, int col);
     bool removePlant(int row, int col);
+    bool shovelPlant(int row, int col);
     bool placeZombie(QString zombieType, int row, int col);
     void checkPlantAttack();
     void checkSunProduction();

@@ -171,9 +171,23 @@ void MainWindow::startGameInternal()
             }
         });
 
+        connect(gameView, &GameView::shovelCellClicked, this, [=](int row, int col) {
+            gameEngine->shovelPlant(row, col);
+        });
+
+        connect(topBar, &TopBarWidget::shovelModeChanged, this, [=](bool enabled) {
+            gameView->setShovelMode(enabled);
+            if (enabled) {
+                cardPanel->clearSelection();
+                gameView->setPlantSelectionMode(false);
+            }
+        });
+
         connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
             if (isPlant && !cardType.isEmpty()) {
                 gameView->setPlantSelectionMode(true);
+                topBar->findChild<QPushButton*>("shovelButton")->setChecked(false);
+                gameView->setShovelMode(false);
             } else {
                 gameView->setPlantSelectionMode(false);
             }

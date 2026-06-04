@@ -25,9 +25,11 @@ public:
     void setPaused(bool paused);
     void setPlantSelectionMode(bool enabled);
     void setZombieMode(bool enabled);
+    void setShovelMode(bool enabled);
 signals:
     void cellClicked(int row, int col);
     void zombieCellClicked(int row, int col);
+    void shovelCellClicked(int row, int col);
     void returnToMenuClicked();
 protected:
     void mousePressEvent(QMouseEvent* event) override;
@@ -40,6 +42,7 @@ private:
     QPoint lastHoverCell;
     bool plantSelectionEnabled = false;
     bool zombieMode = false;
+    bool shovelMode = false;
     void updateHoverHighlight(const QPoint& cell);
     bool isRightSideColumn(int col) const;
 };
