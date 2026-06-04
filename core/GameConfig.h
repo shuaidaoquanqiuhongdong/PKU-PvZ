@@ -31,8 +31,13 @@ namespace GameConfig
     inline constexpr int KimsunflowerProduceInterval = 12000;
 
     inline constexpr int RainchiliCost = 125;
-    inline constexpr int RainchiliHp = 1;
+    inline constexpr int RainchiliHp = 50;
     inline constexpr int RainchiliFuseTime = 1500;
+
+    inline constexpr int FirefanCd = 7500;
+    inline constexpr int BengbearCd = 10000;
+    inline constexpr int KimsunflowerCd = 3000;
+    inline constexpr int RainchiliCd = 15000;
 
     inline constexpr int ZombieAttackDamage = 20;
     inline constexpr int ZombieAttackInterval = 1000;
@@ -85,6 +90,15 @@ namespace GameConfig
         if (type == "DancingZombie") return DancingZombieHp;
         if (type == "DancerZombie")  return DancerZombieHp;
         return 200;
+    }
+
+    inline int getPlantCd(const QString& type)
+    {
+        if (type == "Firefan")       return FirefanCd;
+        if (type == "Bengbear")      return BengbearCd;
+        if (type == "Kimsunflower")  return KimsunflowerCd;
+        if (type == "Rainchili")     return RainchiliCd;
+        return 0;
     }
 
     inline int getZombieSpeed(const QString& type)

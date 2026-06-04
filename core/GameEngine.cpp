@@ -46,6 +46,10 @@ void GameEngine::updateGame()
         zombie->updateEntity();
     updateBullets();
     cleanupDeadEntities();
+    for (auto it = plantCooldowns.begin(); it != plantCooldowns.end(); ++it) {
+        int remaining = qMax(0, GameConfig::getPlantCd(it.key()) - it.value().elapsed());
+        emit plantCooldownChanged(it.key(), remaining);
+    }
     if (!zombieMode) checkWaveTransition();
     checkGameResult();
 }
@@ -150,6 +154,9 @@ bool GameEngine::placePlant(QString plantType, int row, int col)
     if (sunValue < cost)
         return false;
 
+    if (getPlantCooldownRemaining(plantType) > 0)
+        return false;
+
     Plant* plant = nullptr;
     if (plantType == "Firefan")
         plant = new Firefan(row, col);
@@ -175,6 +182,9 @@ bool GameEngine::placePlant(QString plantType, int row, int col)
         static_cast<Rainchili*>(plant)->startFuse();
         emit entityAnimationChanged(plant, AnimationState::Produce);
     }
+
+    plantCooldowns[plantType].start();
+    emit plantCooldownChanged(plantType, GameConfig::getPlantCd(plantType));
 
     return true;
 }
@@ -455,6 +465,14 @@ void GameEngine::collectSun(Sun* sun)
     sun->collect();
     emit sunChanged(sunValue);
     emit sunCollected(sun);
+}
+
+int GameEngine::getPlantCooldownRemaining(const QString& type) const
+{
+    if (!plantCooldowns.contains(type)) return 0;
+    int cd = GameConfig::getPlantCd(type);
+    int elapsed = plantCooldowns[type].elapsed();
+    return qMax(0, cd - elapsed);
 }
 
 void GameEngine::removeEntitySafely(GameEntity* entity)
