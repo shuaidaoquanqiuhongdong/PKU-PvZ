@@ -192,6 +192,10 @@ void MainWindow::startGameInternal()
                 gameView->setPlantSelectionMode(false);
             }
         });
+
+        connect(gameEngine, &GameEngine::plantCooldownChanged, this, [=](const QString& plantType, int cooldownMs) {
+            cardPanel->updatePlantCooldown(plantType, cooldownMs);
+        });
     } else {
         cardPanel->addZombieCard("GenziZombie",   "艮子僵尸",   50,  resPath + "genzizombie/idle_0.png");
         cardPanel->addZombieCard("DancingZombie", "舞王僵尸",   100, resPath + "dancingzombie/idle_0.png");

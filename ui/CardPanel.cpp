@@ -88,6 +88,16 @@ void CardPanel::updateCardState(int currentSun)
     }
 }
 
+void CardPanel::updatePlantCooldown(const QString& plantType, int cooldownMs)
+{
+    for (auto* card : cards) {
+        if (card->getPlantType() == plantType) {
+            card->setCooldown(cooldownMs);
+            break;
+        }
+    }
+}
+
 void CardPanel::clearAllCards()
 {
     clearSelection();

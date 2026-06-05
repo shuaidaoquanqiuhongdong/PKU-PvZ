@@ -13,6 +13,7 @@ PlantCardWidget::PlantCardWidget(const QString& plantType, const QString& displa
     , cost(cost)
     , selected(false)
     , affordable(true)
+    , cooldownRemaining(0)
 {
     setFixedSize(70, 90);
     setCursor(Qt::PointingHandCursor);
@@ -92,10 +93,16 @@ void PlantCardWidget::setAffordable(bool aff)
     update();
 }
 
+void PlantCardWidget::setCooldown(int cooldownMs)
+{
+    cooldownRemaining = cooldownMs;
+    update();
+}
+
 void PlantCardWidget::mousePressEvent(QMouseEvent* event)
 {
     Q_UNUSED(event);
-    if (affordable) {
+    if (affordable && cooldownRemaining <= 0) {
         emit clicked(plantType);
     }
 }
@@ -115,5 +122,17 @@ void PlantCardWidget::paintEvent(QPaintEvent* event)
         QPen pen(QColor("#FFD700"), 3);
         painter.setPen(pen);
         painter.drawRoundedRect(rect().adjusted(1, 1, -1, -1), 5, 5);
+    }
+
+    if (cooldownRemaining > 0) {
+        int cdSeconds = (cooldownRemaining + 999) / 1000;
+        painter.fillRect(rect(), QColor(0, 0, 0, 160));
+        
+        QFont font = painter.font();
+        font.setPointSize(16);
+        font.setBold(true);
+        painter.setFont(font);
+        painter.setPen(QColor("#FFFFFF"));
+        painter.drawText(rect(), Qt::AlignCenter, QString::number(cdSeconds));
     }
 }

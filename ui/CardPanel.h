@@ -19,6 +19,7 @@ public:
     bool isPlantMode() const;
     void clearSelection();
     void updateCardState(int currentSun);
+    void updatePlantCooldown(const QString& plantType, int cooldownMs);
     void clearAllCards();
 signals:
     void cardSelected(const QString& cardType, bool isPlant);

@@ -16,6 +16,7 @@ public:
     int getCost() const;
     void setSelected(bool selected);
     void setAffordable(bool affordable);
+    void setCooldown(int cooldownMs);
 signals:
     void clicked(const QString& plantType);
 protected:
@@ -28,6 +29,7 @@ private:
     QPixmap icon;
     bool selected;
     bool affordable;
+    int cooldownRemaining;
 };
 
 #endif
