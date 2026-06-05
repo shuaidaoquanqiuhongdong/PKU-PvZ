@@ -35,6 +35,9 @@
 
         <file alias="effects/place_0.png">images/effects/place_0.png</file>
         <file alias="effects/place_1.png">images/effects/place_1.png</file>
+	<file alias="effects/rainchili_fire_0.png">images/effects/rainchili_fire_0.png</file>
+	<file alias="effects/rainchili_fire_1.png">images/effects/rainchili_fire_1.png</file>
+
        
         <file alias="genzizombie/walk_0.png">images/genzizombie/walk_0.png</file>
         <file alias="genzizombie/walk_1.png">images/genzizombie/walk_1.png</file>
@@ -81,6 +84,15 @@
         <file alias="dancingzombie/death_5.png">images/dancingzombie/death_5.png</file>
         <file alias="dancingzombie/death_6.png">images/dancingzombie/death_6.png</file>
         <file alias="dancingzombie/death_7.png">images/dancingzombie/death_7.png</file>
+        <file alias="dancingzombie/light.png">images/dancingzombie/light.png</file>
+        <file alias="dancingzombie/dance_0.png">images/dancingzombie/dance_0.png</file>
+        <file alias="dancingzombie/dance_1.png">images/dancingzombie/dance_1.png</file>
+        <file alias="dancingzombie/dance_2.png">images/dancingzombie/dance_2.png</file>
+        <file alias="dancingzombie/dance_3.png">images/dancingzombie/dance_3.png</file>
+        <file alias="dancingzombie/dance_4.png">images/dancingzombie/dance_4.png</file>
+        <file alias="dancingzombie/dance_5.png">images/dancingzombie/dance_5.png</file>
+        <file alias="dancingzombie/dance_6.png">images/dancingzombie/dance_6.png</file>
+        <file alias="dancingzombie/dance_7.png">images/dancingzombie/dance_7.png</file>
 
         <file alias="eater/walk_0.png">images/eater/walk_0.png</file>
         <file alias="eater/walk_1.png">images/eater/walk_1.png</file>

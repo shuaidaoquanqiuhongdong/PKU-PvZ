@@ -293,6 +293,11 @@ void GameEngine::onDancingZombieSpawn(DancingZombie* dancing)
         emit entityCreated(dancer);
         emit entityAnimationChanged(dancer, AnimationState::Walk);
     }
+
+    // 每次召唤完成后，舞王回到 Walk 状态。
+    // 这样下一次 spawnTimer 触发时，AnimationState::Spawn 会重新播放，
+    // 不会只在第一次召唤时跳舞。
+    emit entityAnimationChanged(dancing, AnimationState::Walk);
 }
 
 void GameEngine::checkCollisions()
@@ -406,6 +411,12 @@ void GameEngine::spawnZombie()
 
     if (auto* dancing = dynamic_cast<DancingZombie*>(zombie))
     {
+        connect(dancing, &DancingZombie::summonAnimationStarted,
+                this,
+                [this](DancingZombie* self) {
+                    emit entityAnimationChanged(self, AnimationState::Spawn);
+                });
+
         connect(dancing, &DancingZombie::readyToSpawn,
                 this, &GameEngine::onDancingZombieSpawn);
     }
@@ -444,19 +455,29 @@ void GameEngine::checkZombieAttackPlant()
     for (auto* zombie : zombies)
     {
         if (!zombie->isAlive()) continue;
+
+        if (auto* dancing = dynamic_cast<DancingZombie*>(zombie))
+        {
+            if (dancing->isSummoning()) continue;
+        }
+
         int row = zombie->getRow();
         QPoint cell = gridManager->scenePosToCell(zombie->pos());
         int col = cell.x();
+
         Plant* plantAhead = nullptr;
+
         for (int c = col; c >= 0; --c)
         {
             plantAhead = gridManager->getPlant(row, c);
             if (plantAhead && plantAhead->isAlive()) break;
             plantAhead = nullptr;
         }
+
         if (plantAhead)
         {
             qreal dx = zombie->pos().x() - plantAhead->pos().x();
+
             if (dx >= 0 && dx < 60)
             {
                 if (!zombie->isAttacking())
@@ -469,6 +490,7 @@ void GameEngine::checkZombieAttackPlant()
                 {
                     zombie->resetAttackTimer();
                     plantAhead->takeDamage(zombie->getAttackDamage());
+
                     if (!plantAhead->isAlive())
                     {
                         emit entityDied(plantAhead);
@@ -579,6 +601,7 @@ bool GameEngine::placeZombie(QString zombieType, int row, int col)
         return false;
 
     Zombie* zombie = nullptr;
+
     if (zombieType == "GenziZombie")
         zombie = new GenziZombie(row, col);
     else if (zombieType == "DancingZombie")
@@ -587,18 +610,27 @@ bool GameEngine::placeZombie(QString zombieType, int row, int col)
         return false;
 
     sunValue -= cost;
+
     QPointF pos = gridManager->cellToScenePos(row, col);
     zombie->setPos(pos);
     zombies.append(zombie);
+
     emit sunChanged(sunValue);
-    emit entityCreated(zombie);
-    emit entityAnimationChanged(zombie, AnimationState::Walk);
 
     if (auto* dancing = dynamic_cast<DancingZombie*>(zombie))
     {
+        connect(dancing, &DancingZombie::summonAnimationStarted,
+                this,
+                [this](DancingZombie* self) {
+                    emit entityAnimationChanged(self, AnimationState::Spawn);
+                });
+
         connect(dancing, &DancingZombie::readyToSpawn,
                 this, &GameEngine::onDancingZombieSpawn);
     }
+
+    emit entityCreated(zombie);
+    emit entityAnimationChanged(zombie, AnimationState::Walk);
 
     return true;
 }

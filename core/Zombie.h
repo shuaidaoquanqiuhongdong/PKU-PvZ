@@ -39,15 +39,26 @@ public:
 class DancingZombie : public Zombie
 {
     Q_OBJECT
+
 public:
     DancingZombie(int row_, int col_);
     ~DancingZombie();
+
+    void updateEntity() override;
     void stopSpawnTimer();
     void startSpawnTimer();
+
+    bool isSummoning() const { return summoning; }
+
 signals:
+    void summonAnimationStarted(DancingZombie* self);
     void readyToSpawn(DancingZombie* self);
+
 private:
+    void beginSummon();
+
     QTimer* spawnTimer;
+    bool summoning;
 };
 
 class DancerZombie : public Zombie

@@ -9,14 +9,18 @@
 #include "core/Zombie.h"
 #include "core/Bullet.h"
 #include "core/Sun.h"
+#include "core/GameConfig.h"
 
 #include <QAbstractAnimation>
 #include <QDebug>
 #include <QEasingCurve>
 #include <QGraphicsOpacityEffect>
+#include <QGraphicsPixmapItem>
 #include <QGraphicsScene>
 #include <QParallelAnimationGroup>
 #include <QPointer>
+#include <QPainter>
+#include <QTimer>
 #include <QPropertyAnimation>
 #include <QSequentialAnimationGroup>
 
@@ -320,6 +324,10 @@ void AnimationManager::bindEntity(GameEntity* entity)
             }
         }
 
+        if (entity->getEntityType() == EntityType::Zombie) {
+            hideDancingZombieLight(static_cast<Zombie*>(entity));
+        }
+
         currentStates.remove(entity);
     });
 }
@@ -332,6 +340,10 @@ void AnimationManager::unbindEntity(GameEntity* entity)
 
     if (entity->getEntityType() == EntityType::Sun) {
         stopSunMotionAnimation(static_cast<Sun*>(entity));
+    }
+
+    if (entity->getEntityType() == EntityType::Zombie) {
+        hideDancingZombieLight(static_cast<Zombie*>(entity));
     }
 
     stopEntitySpriteAnimations(entity);
@@ -362,22 +374,47 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
 
     if (entity->getEntityType() == EntityType::Sun) {
         auto* sun = static_cast<Sun*>(entity);
+
         if (state == AnimationState::Spawn) {
             playSunSpawnAnimation(sun);
             return;
         }
+
         if (state == AnimationState::Collect) {
             playSunCollectAnimation(sun);
             return;
         }
     }
 
-    if (entity->getEntityType() == EntityType::Bullet && state == AnimationState::Hit) {
+    if (entity->getEntityType() == EntityType::Bullet &&
+        state == AnimationState::Hit) {
         playBulletHitEffect(entity->pos());
         return;
     }
 
-    const AnimationState oldState = currentStates.value(entity, AnimationState::Idle);
+    if (entity->getEntityType() == EntityType::Plant &&
+        state == AnimationState::Attack) {
+        auto* plant = static_cast<Plant*>(entity);
+
+        if (plant->getPlantType() == "Rainchili") {
+            playRainchiliExplosionEffect(plant->getRow());
+        }
+    }
+
+    if (entity->getEntityType() == EntityType::Zombie) {
+        auto* zombie = static_cast<Zombie*>(entity);
+
+        if (dynamic_cast<DancingZombie*>(zombie)) {
+            if (state == AnimationState::Spawn) {
+                showDancingZombieLight(zombie);
+            } else {
+                hideDancingZombieLight(zombie);
+            }
+        }
+    }
+
+    const AnimationState oldState =
+        currentStates.value(entity, AnimationState::Idle);
 
     if (oldState == AnimationState::Death) {
         return;
@@ -393,8 +430,11 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
         return;
     }
 
-    const bool releaseTransition = canReleaseHighPriorityState(oldState, state);
-    if (!releaseTransition && animationPriority(state) < animationPriority(oldState)) {
+    const bool releaseTransition =
+        canReleaseHighPriorityState(oldState, state);
+
+    if (!releaseTransition &&
+        animationPriority(state) < animationPriority(oldState)) {
         return;
     }
 
@@ -409,6 +449,7 @@ void AnimationManager::playAnimation(GameEntity* entity, AnimationState state)
     }
 
     SpriteAnimation* nextAnimation = table.value(state, nullptr);
+
     if (!nextAnimation) {
         return;
     }
@@ -482,8 +523,16 @@ void AnimationManager::playDeathEffect(GameEntity* entity)
 
     currentStates[entity] = AnimationState::Death;
 
+    if (entity->getEntityType() == EntityType::Zombie) {
+        hideDancingZombieLight(static_cast<Zombie*>(entity));
+    }
+
     if (entity->getEntityType() == EntityType::Sun) {
         stopSunMotionAnimation(static_cast<Sun*>(entity));
+    }
+
+    if (entity->getEntityType() == EntityType::Zombie) {
+        hideDancingZombieLight(static_cast<Zombie*>(entity));
     }
 
     stopEntitySpriteAnimations(entity);
@@ -552,6 +601,147 @@ void AnimationManager::playPlantPlaceEffect(Plant* plant)
 void AnimationManager::playBulletHitEffect(QPointF pos)
 {
     Q_UNUSED(pos);
+}
+
+void AnimationManager::showDancingZombieLight(Zombie* zombie)
+{
+    if (!zombie || !zombie->scene()) {
+        return;
+    }
+
+    hideDancingZombieLight(zombie);
+
+    const QPixmap light =
+        ResourceManager::loadPixmap(":/images/dancingzombie/light.png");
+
+    if (light.isNull()) {
+        qWarning() << "AnimationManager: dancing zombie light failed to load.";
+        return;
+    }
+
+    auto* lightItem = new QGraphicsPixmapItem(light);
+
+    lightItem->setOffset(
+        -light.width() / 2.0,
+        -light.height() / 2.0
+    );
+
+    lightItem->setPos(zombie->pos());
+
+    // Z 值比舞王低一点，所以 light 不会盖住僵尸。
+    lightItem->setZValue(zombie->zValue() - 0.1);
+
+    zombie->scene()->addItem(lightItem);
+    dancingZombieLights.insert(zombie, lightItem);
+}
+
+void AnimationManager::hideDancingZombieLight(Zombie* zombie)
+{
+    QGraphicsPixmapItem* lightItem = dancingZombieLights.take(zombie);
+
+    if (!lightItem) {
+        return;
+    }
+
+    if (lightItem->scene()) {
+        lightItem->scene()->removeItem(lightItem);
+    }
+
+    delete lightItem;
+}
+
+void AnimationManager::playRainchiliExplosionEffect(int row)
+{
+    if (!lastKnownScene) {
+        qWarning() << "AnimationManager: no scene cached for rainchili explosion effect.";
+        return;
+    }
+
+    if (row < 0 || row >= GameConfig::Rows) {
+        qWarning() << "AnimationManager: invalid rainchili explosion row:" << row;
+        return;
+    }
+
+    QPixmap fireFrame0 = ResourceManager::loadPixmap(":/images/effects/rainchili_fire_0.png");
+    QPixmap fireFrame1 = ResourceManager::loadPixmap(":/images/effects/rainchili_fire_1.png");
+
+    if (fireFrame0.isNull() || fireFrame1.isNull()) {
+        qWarning() << "AnimationManager: rainchili fire frames failed to load.";
+        return;
+    }
+
+    const int laneWidth = GameConfig::Cols * GameConfig::CellWidth;
+    const int laneHeight = static_cast<int>(GameConfig::CellHeight * 0.95);
+
+    // 关键点：不是手动平铺 9 次，而是把一张图直接拉伸到整行宽度
+    QPixmap displayFrame0 = fireFrame0.scaled(
+        laneWidth,
+        laneHeight,
+        Qt::IgnoreAspectRatio,
+        Qt::SmoothTransformation
+        );
+
+    QPixmap displayFrame1 = fireFrame1.scaled(
+        laneWidth,
+        laneHeight,
+        Qt::IgnoreAspectRatio,
+        Qt::SmoothTransformation
+        );
+
+    auto* item = new QGraphicsPixmapItem(displayFrame0);
+    item->setTransformationMode(Qt::SmoothTransformation);
+
+    const qreal x = GameConfig::GridStartX;
+    const qreal y = GameConfig::GridStartY
+                    + row * GameConfig::CellHeight
+                    + (GameConfig::CellHeight - laneHeight) / 2.0;
+
+    item->setPos(x, y);
+    item->setZValue(EffectLayer + 10 + row * 0.01);
+
+    lastKnownScene->addItem(item);
+
+    QVector<QPixmap> frames = {
+        displayFrame0,
+        displayFrame1,
+        displayFrame0,
+        displayFrame1
+    };
+
+    auto* frameTimer = new QTimer(this);
+    frameTimer->setInterval(90);
+
+    auto* frameIndex = new int(0);
+    QPointer<QGraphicsScene> safeScene(lastKnownScene);
+
+    connect(frameTimer, &QTimer::timeout, this,
+            [item, frames, frameTimer, frameIndex, safeScene]() mutable {
+                if (!safeScene || !item || !item->scene()) {
+                    frameTimer->stop();
+                    frameTimer->deleteLater();
+                    delete frameIndex;
+                    return;
+                }
+
+                ++(*frameIndex);
+
+                if (*frameIndex >= frames.size()) {
+                    frameTimer->stop();
+
+                    if (safeScene && item->scene()) {
+                        safeScene->removeItem(item);
+                    }
+
+                    delete item;
+                    frameTimer->deleteLater();
+                    delete frameIndex;
+                    return;
+                }
+
+                item->setPixmap(frames[*frameIndex]);
+            });
+
+    frameTimer->start();
 }
 
 void AnimationManager::playSunSpawnAnimation(Sun* sun, QPointF start, QPointF end)
@@ -811,7 +1001,7 @@ void AnimationManager::setupZombieAnimations(Zombie* zombie)
         walkFrames,
         160,
         true
-        );
+    );
 
     addSpriteAnimation(
         zombie,
@@ -819,7 +1009,7 @@ void AnimationManager::setupZombieAnimations(Zombie* zombie)
         attackFrames,
         140,
         true
-        );
+    );
 
     addSpriteAnimation(
         zombie,
@@ -827,14 +1017,31 @@ void AnimationManager::setupZombieAnimations(Zombie* zombie)
         deathFrames,
         120,
         false
+    );
+
+    if (key == QStringLiteral("dancingzombie")) {
+        QVector<QPixmap> danceFrames =
+            ResourceManager::loadFrames(
+                folder,
+                "dance",
+                GameConfig::DancingZombieDanceFrameCount
+            );
+
+        addSpriteAnimation(
+            zombie,
+            AnimationState::Spawn,
+            danceFrames,
+            GameConfig::DancingZombieDanceFrameInterval,
+            false
         );
+    }
 
     if (!walkFrames.isEmpty()) {
         zombie->setPixmap(walkFrames.first());
         zombie->setOffset(
             -walkFrames.first().width() / 2.0,
             -walkFrames.first().height() / 2.0
-            );
+        );
     }
 
     zombie->setZValue(ZombieLayer + zombie->pos().y() / 1000.0);
@@ -933,6 +1140,11 @@ void AnimationManager::addSpriteAnimation(
                         return;
                     }
 
+                    if (state == AnimationState::Spawn &&
+                        safeEntity->getEntityType() == EntityType::Zombie) {
+                        hideDancingZombieLight(static_cast<Zombie*>(safeEntity.data()));
+                    }
+
                     AnimationState fallback = AnimationState::Idle;
 
                     if (safeEntity->getEntityType() == EntityType::Zombie) {
@@ -966,12 +1178,13 @@ int AnimationManager::animationPriority(AnimationState state) const
         return 100;
     case AnimationState::Hit:
         return 80;
+    case AnimationState::Spawn:
+        return 70;
     case AnimationState::Attack:
     case AnimationState::Produce:
         return 60;
     case AnimationState::Walk:
         return 30;
-    case AnimationState::Spawn:
     case AnimationState::Collect:
     case AnimationState::Move:
         return 20;

@@ -45,6 +45,10 @@ namespace GameConfig
     inline constexpr int DancingZombieHp = 200;
     inline constexpr int DancingZombieSpeed = 1;
     inline constexpr int DancingZombieSpawnInterval = 8000;
+    inline constexpr int DancingZombieDanceFrameCount = 8;
+    inline constexpr int DancingZombieDanceFrameInterval = 140;
+    inline constexpr int DancingZombieDanceDuration =
+        DancingZombieDanceFrameCount * DancingZombieDanceFrameInterval;
 
     inline constexpr int DancerZombieHp = 100;
     inline constexpr int DancerZombieSpeed = 1;

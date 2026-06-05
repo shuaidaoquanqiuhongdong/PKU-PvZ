@@ -30,28 +30,64 @@ GenziZombie::GenziZombie(int row_, int col_): Zombie(row_, col_, GameConfig::Gen
 
 GenziZombie::~GenziZombie() {}
 
-DancingZombie::DancingZombie(int row_, int col_): Zombie(row_, col_, GameConfig::DancingZombieHp, GameConfig::DancingZombieSpeed)
+DancingZombie::DancingZombie(int row_, int col_)
+    : Zombie(row_, col_,
+             GameConfig::DancingZombieHp,
+             GameConfig::DancingZombieSpeed)
+    , spawnTimer(new QTimer(this))
+    , summoning(false)
 {
-    spawnTimer = new QTimer(this);
     spawnTimer->setSingleShot(false);
 
-    // 随机初始延迟 3~7s，让不同舞王僵尸的生成节奏错开
-    int initialDelay = 3000 + rand() % 4000;
-    QTimer::singleShot(initialDelay, this, [this]() {
-        if (isAlive())
-            emit readyToSpawn(this);
-        spawnTimer->start(GameConfig::DancingZombieSpawnInterval);
-    });
+    connect(spawnTimer, &QTimer::timeout,
+            this, &DancingZombie::beginSummon);
 
-    connect(spawnTimer, &QTimer::timeout, this, [this]() {
-        if (isAlive())
-            emit readyToSpawn(this);
+    const int initialDelay = 3000 + rand() % 4000;
+
+    QTimer::singleShot(initialDelay, this, [this]() {
+        if (!isAlive()) return;
+
+        beginSummon();
+        spawnTimer->start(GameConfig::DancingZombieSpawnInterval);
     });
 }
 
 DancingZombie::~DancingZombie()
 {
     spawnTimer->stop();
+}
+
+void DancingZombie::updateEntity()
+{
+    if (summoning) {
+        return;
+    }
+
+    Zombie::updateEntity();
+}
+
+void DancingZombie::beginSummon()
+{
+    if (!isAlive() || summoning || isAttacking()) {
+        return;
+    }
+
+    summoning = true;
+    emit summonAnimationStarted(this);
+
+    QTimer::singleShot(
+        GameConfig::DancingZombieDanceDuration,
+        this,
+        [this]() {
+            if (!isAlive()) {
+                summoning = false;
+                return;
+            }
+
+            summoning = false;
+            emit readyToSpawn(this);
+        }
+    );
 }
 
 void DancingZombie::stopSpawnTimer()
@@ -61,8 +97,9 @@ void DancingZombie::stopSpawnTimer()
 
 void DancingZombie::startSpawnTimer()
 {
-    if (!spawnTimer->isActive())
-        spawnTimer->start();
+    if (!spawnTimer->isActive()) {
+        spawnTimer->start(GameConfig::DancingZombieSpawnInterval);
+    }
 }
 
 void Zombie::startAttack(Plant* plant)

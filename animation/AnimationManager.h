@@ -9,6 +9,7 @@
 
 class QAbstractAnimation;
 class QGraphicsScene;
+class QGraphicsPixmapItem;
 
 class GameEntity;
 class Plant;
@@ -85,10 +86,16 @@ private:
     // 阳光 Spawn / Idle / Collect 的位移动画。
     QHash<Sun*, QAbstractAnimation*> sunMotionAnimations;
 
+    // 舞王召唤时位于僵尸背后的灯光。
+    QHash<Zombie*, QGraphicsPixmapItem*> dancingZombieLights;
+
     void setupPlantAnimations(Plant* plant);
     void setupZombieAnimations(Zombie* zombie);
     void setupBulletAnimations(Bullet* bullet);
     void setupSunAnimations(Sun* sun);
+    void playRainchiliExplosionEffect(int row);
+    void showDancingZombieLight(Zombie* zombie);
+    void hideDancingZombieLight(Zombie* zombie);
 
     int animationPriority(AnimationState state) const;
 
