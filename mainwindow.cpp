@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("PvZLiteQt - 植物大战僵尸");
 
     constexpr int BaseW = 1408;
-    constexpr int BaseH = 888;
+    constexpr int BaseH = 960;
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen)
     {
@@ -171,12 +171,30 @@ void MainWindow::startGameInternal()
             }
         });
 
+        connect(gameView, &GameView::shovelCellClicked, this, [=](int row, int col) {
+            gameEngine->shovelPlant(row, col);
+        });
+
+        connect(topBar, &TopBarWidget::shovelModeChanged, this, [=](bool enabled) {
+            gameView->setShovelMode(enabled);
+            if (enabled) {
+                cardPanel->clearSelection();
+                gameView->setPlantSelectionMode(false);
+            }
+        });
+
         connect(cardPanel, &CardPanel::cardSelected, this, [=](const QString& cardType, bool isPlant) {
             if (isPlant && !cardType.isEmpty()) {
                 gameView->setPlantSelectionMode(true);
+                topBar->findChild<QPushButton*>("shovelButton")->setChecked(false);
+                gameView->setShovelMode(false);
             } else {
                 gameView->setPlantSelectionMode(false);
             }
+        });
+
+        connect(gameEngine, &GameEngine::plantCooldownChanged, this, [=](const QString& plantType, int cooldownMs) {
+            cardPanel->updatePlantCooldown(plantType, cooldownMs);
         });
     } else {
         cardPanel->addZombieCard("GenziZombie",   "艮子僵尸",   50,  resPath + "genzizombie/idle_0.png");
@@ -206,7 +224,7 @@ void MainWindow::startGameInternal()
     {
         gameView->applyScale(scaleFactor);
         topBar->setFixedHeight(static_cast<int>(50 * scaleFactor));
-        cardPanel->setFixedHeight(static_cast<int>(70 * scaleFactor));
+        cardPanel->setFixedHeight(static_cast<int>(105 * scaleFactor));
     }
 
     gameView->initScene();

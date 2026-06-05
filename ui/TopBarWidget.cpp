@@ -21,6 +21,17 @@ TopBarWidget::TopBarWidget(QWidget *parent)
 
     layout->addStretch();
 
+    shovelButton = new QPushButton("⛏️ 铲子", this);
+    shovelButton->setObjectName("shovelButton");
+    shovelButton->setFixedSize(70, 30);
+    shovelButton->setStyleSheet(
+        "QPushButton { font-size: 14px; background-color: #607D8B; color: white; border-radius: 5px; }"
+        "QPushButton:hover { background-color: #78909C; }"
+        "QPushButton:checked { background-color: #FF7043; }"
+    );
+    shovelButton->setCheckable(true);
+    layout->addWidget(shovelButton);
+
     pauseButton = new QPushButton("暂停", this);
     pauseButton->setFixedSize(60, 30);
     pauseButton->setStyleSheet("font-size: 14px;");
@@ -28,6 +39,11 @@ TopBarWidget::TopBarWidget(QWidget *parent)
 
     connect(pauseButton, &QPushButton::clicked, this, [this]() {
         emit pauseClicked();
+    });
+
+    connect(shovelButton, &QPushButton::toggled, this, [this](bool checked) {
+        shovelMode = checked;
+        emit shovelModeChanged(checked);
     });
 }
 

@@ -16,11 +16,14 @@ public:
     void setPaused(bool paused);
 signals:
     void pauseClicked();
+    void shovelModeChanged(bool enabled);
 private:
     SunDisplay* sunDisplay;
     QPushButton* pauseButton;
+    QPushButton* shovelButton;
     QLabel* waveLabel;
     bool isPaused = false;
+    bool shovelMode = false;
 };
 
 #endif

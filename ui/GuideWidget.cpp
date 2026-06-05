@@ -127,9 +127,13 @@ void GuideWidget::createPlantPage()
     auto* firefanInfo = new QLabel("💴 100阳光\n💢 发射火焰\n❤️ 中等血量", firefanCard);
     firefanInfo->setStyleSheet("font-size: 14px; color: #8BC34A;");
     firefanInfo->setAlignment(Qt::AlignCenter);
+    auto* firefanDesc = new QLabel("💬 \"嘎嘎滴辣虾～\"", firefanCard);
+    firefanDesc->setStyleSheet("font-size: 16px; color: #FFEB3B; font-weight: bold; background-color: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; text-shadow: 0 0 8px #FFD54F, 0 0 15px #FFA000;");
+    firefanDesc->setAlignment(Qt::AlignCenter);
     firefanLayout->addWidget(firefanImgLabel);
     firefanLayout->addWidget(firefanName);
     firefanLayout->addWidget(firefanInfo);
+    firefanLayout->addWidget(firefanDesc);
 
     // 金日葵
     auto* sunflowerCard = new QFrame();
@@ -147,9 +151,13 @@ void GuideWidget::createPlantPage()
     auto* sunflowerInfo = new QLabel("💴 50阳光\n☀️ 产生阳光\n❤️ 低血量", sunflowerCard);
     sunflowerInfo->setStyleSheet("font-size: 14px; color: #8BC34A;");
     sunflowerInfo->setAlignment(Qt::AlignCenter);
+    auto* sunflowerDesc = new QLabel("💬 \"后羿射了九个太阳，其中一个落到了韩国北方。\"", sunflowerCard);
+    sunflowerDesc->setStyleSheet("font-size: 15px; color: #FFEB3B; font-weight: bold; background-color: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; text-shadow: 0 0 8px #FFD54F, 0 0 15px #FFA000;");
+    sunflowerDesc->setAlignment(Qt::AlignCenter);
     sunflowerLayout->addWidget(sunflowerImgLabel);
     sunflowerLayout->addWidget(sunflowerName);
     sunflowerLayout->addWidget(sunflowerInfo);
+    sunflowerLayout->addWidget(sunflowerDesc);
 
     // 熊绷果
     auto* bearCard = new QFrame();
@@ -167,9 +175,13 @@ void GuideWidget::createPlantPage()
     auto* bearInfo = new QLabel("💴 50阳光\n🛡️ 高血量\n❤️ 肉盾", bearCard);
     bearInfo->setStyleSheet("font-size: 14px; color: #8BC34A;");
     bearInfo->setAlignment(Qt::AlignCenter);
+    auto* bearDesc = new QLabel("💬 \"俺绷不住了熊大，咋才能轻松绷住啊？\"", bearCard);
+    bearDesc->setStyleSheet("font-size: 15px; color: #FFEB3B; font-weight: bold; background-color: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; text-shadow: 0 0 8px #FFD54F, 0 0 15px #FFA000;");
+    bearDesc->setAlignment(Qt::AlignCenter);
     bearLayout->addWidget(bearImgLabel);
     bearLayout->addWidget(bearName);
     bearLayout->addWidget(bearInfo);
+    bearLayout->addWidget(bearDesc);
 
     // 带派辣椒
     auto* chiliCard = new QFrame();
@@ -187,9 +199,13 @@ void GuideWidget::createPlantPage()
     auto* chiliInfo = new QLabel("💴 125阳光\n💥 爆炸伤害\n❤️ 一次性", chiliCard);
     chiliInfo->setStyleSheet("font-size: 14px; color: #8BC34A;");
     chiliInfo->setAlignment(Qt::AlignCenter);
+    auto* chiliDesc = new QLabel("💬 \"带派不老铁\"", chiliCard);
+    chiliDesc->setStyleSheet("font-size: 16px; color: #FFEB3B; font-weight: bold; background-color: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; text-shadow: 0 0 8px #FFD54F, 0 0 15px #FFA000;");
+    chiliDesc->setAlignment(Qt::AlignCenter);
     chiliLayout->addWidget(chiliImgLabel);
     chiliLayout->addWidget(chiliName);
     chiliLayout->addWidget(chiliInfo);
+    chiliLayout->addWidget(chiliDesc);
 
     plantGrid->addWidget(firefanCard, 0, 0);
     plantGrid->addWidget(sunflowerCard, 0, 1);
@@ -235,9 +251,13 @@ void GuideWidget::createZombiePage()
     auto* genziInfo = new QLabel("💴 50阳光\n🚶 普通速度\n❤️ 中等血量", genziCard);
     genziInfo->setStyleSheet("font-size: 14px; color: #FFAB91;");
     genziInfo->setAlignment(Qt::AlignCenter);
+    auto* genziDesc = new QLabel("💬 \"好吃大饼卷肉、焖子这一块\"", genziCard);
+    genziDesc->setStyleSheet("font-size: 15px; color: #FFEB3B; font-weight: bold; background-color: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; text-shadow: 0 0 8px #FFD54F, 0 0 15px #FFA000;");
+    genziDesc->setAlignment(Qt::AlignCenter);
     genziLayout->addWidget(genziImgLabel);
     genziLayout->addWidget(genziName);
     genziLayout->addWidget(genziInfo);
+    genziLayout->addWidget(genziDesc);
 
     // 舞王僵尸
     auto* danceCard = new QFrame();
@@ -255,16 +275,20 @@ void GuideWidget::createZombiePage()
     auto* danceInfo = new QLabel("💴 100阳光\n💃 召唤同伴\n❤️ 中等血量", danceCard);
     danceInfo->setStyleSheet("font-size: 14px; color: #FFAB91;");
     danceInfo->setAlignment(Qt::AlignCenter);
+    auto* danceDesc = new QLabel("💬 \"你干嘛～～～\"", danceCard);
+    danceDesc->setStyleSheet("font-size: 16px; color: #FFEB3B; font-weight: bold; background-color: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; text-shadow: 0 0 8px #FFD54F, 0 0 15px #FFA000;");
+    danceDesc->setAlignment(Qt::AlignCenter);
     danceLayout->addWidget(danceImgLabel);
     danceLayout->addWidget(danceName);
     danceLayout->addWidget(danceInfo);
+    danceLayout->addWidget(danceDesc);
 
     // 伴舞僵尸
     auto* dancerCard = new QFrame();
     dancerCard->setStyleSheet("background-color: #3a2a2a; border-radius: 10px; padding: 15px;");
     auto* dancerLayout = new QVBoxLayout(dancerCard);
     auto* dancerImgLabel = new QLabel();
-    QPixmap dancerPix(":/images/dancingzombie/idle_0.png");
+    QPixmap dancerPix(":/images/chicken/walk_0.png");
     if (!dancerPix.isNull()) {
         dancerImgLabel->setPixmap(dancerPix.scaled(80, 80, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
@@ -275,9 +299,13 @@ void GuideWidget::createZombiePage()
     auto* dancerInfo = new QLabel("👯 跟随舞王\n🚶 普通速度\n❤️ 低血量", dancerCard);
     dancerInfo->setStyleSheet("font-size: 14px; color: #FFAB91;");
     dancerInfo->setAlignment(Qt::AlignCenter);
+    auto* dancerDesc = new QLabel("💬 \"zhin\"", dancerCard);
+    dancerDesc->setStyleSheet("font-size: 16px; color: #FFEB3B; font-weight: bold; background-color: rgba(0,0,0,0.6); padding: 8px; border-radius: 6px; text-shadow: 0 0 8px #FFD54F, 0 0 15px #FFA000;");
+    dancerDesc->setAlignment(Qt::AlignCenter);
     dancerLayout->addWidget(dancerImgLabel);
     dancerLayout->addWidget(dancerName);
     dancerLayout->addWidget(dancerInfo);
+    dancerLayout->addWidget(dancerDesc);
 
     zombieGrid->addWidget(genziCard, 0, 0);
     zombieGrid->addWidget(danceCard, 0, 1);

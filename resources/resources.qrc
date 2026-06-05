@@ -94,6 +94,37 @@
         <file alias="dancingzombie/dance_6.png">images/dancingzombie/dance_6.png</file>
         <file alias="dancingzombie/dance_7.png">images/dancingzombie/dance_7.png</file>
 
+        <file alias="dancerzombie/idle_0.png">images/dancerzombie/walk_0.png</file>
+        <file alias="dancerzombie/idle_1.png">images/dancerzombie/walk_1.png</file>
+        <file alias="dancerzombie/idle_2.png">images/dancerzombie/walk_2.png</file>
+        <file alias="dancerzombie/idle_3.png">images/dancerzombie/walk_3.png</file>
+        <file alias="dancerzombie/idle_4.png">images/dancerzombie/walk_4.png</file>
+        <file alias="dancerzombie/idle_5.png">images/dancerzombie/walk_5.png</file>
+        <file alias="dancerzombie/idle_6.png">images/dancerzombie/walk_6.png</file>
+        <file alias="dancerzombie/idle_7.png">images/dancerzombie/walk_7.png</file>
+        <file alias="dancerzombie/walk_0.png">images/dancerzombie/walk_0.png</file>
+        <file alias="dancerzombie/walk_1.png">images/dancerzombie/walk_1.png</file>
+        <file alias="dancerzombie/walk_2.png">images/dancerzombie/walk_2.png</file>
+        <file alias="dancerzombie/walk_3.png">images/dancerzombie/walk_3.png</file>
+        <file alias="dancerzombie/walk_4.png">images/dancerzombie/walk_4.png</file>
+        <file alias="dancerzombie/walk_5.png">images/dancerzombie/walk_5.png</file>
+        <file alias="dancerzombie/walk_6.png">images/dancerzombie/walk_6.png</file>
+        <file alias="dancerzombie/walk_7.png">images/dancerzombie/walk_7.png</file>
+        <file alias="dancerzombie/attack_0.png">images/dancerzombie/attack_0.png</file>
+        <file alias="dancerzombie/attack_1.png">images/dancerzombie/attack_1.png</file>
+        <file alias="dancerzombie/attack_2.png">images/dancerzombie/attack_2.png</file>
+        <file alias="dancerzombie/attack_3.png">images/dancerzombie/attack_3.png</file>
+        <file alias="dancerzombie/attack_4.png">images/dancerzombie/attack_4.png</file>
+        <file alias="dancerzombie/attack_5.png">images/dancerzombie/attack_5.png</file>
+        <file alias="dancerzombie/death_0.png">images/dancerzombie/death_0.png</file>
+        <file alias="dancerzombie/death_1.png">images/dancerzombie/death_1.png</file>
+        <file alias="dancerzombie/death_2.png">images/dancerzombie/death_2.png</file>
+        <file alias="dancerzombie/death_3.png">images/dancerzombie/death_3.png</file>
+        <file alias="dancerzombie/death_4.png">images/dancerzombie/death_4.png</file>
+        <file alias="dancerzombie/death_5.png">images/dancerzombie/death_5.png</file>
+        <file alias="dancerzombie/death_6.png">images/dancerzombie/death_6.png</file>
+        <file alias="dancerzombie/death_7.png">images/dancerzombie/death_7.png</file>
+
         <file alias="eater/walk_0.png">images/eater/walk_0.png</file>
         <file alias="eater/walk_1.png">images/eater/walk_1.png</file>
         <file alias="eater/walk_2.png">images/eater/walk_2.png</file>

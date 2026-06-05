@@ -134,6 +134,14 @@ void GameView::setZombieMode(bool enabled)
     }
 }
 
+void GameView::setShovelMode(bool enabled)
+{
+    shovelMode = enabled;
+    if (!enabled && hoverHighlight) {
+        hoverHighlight->setVisible(false);
+    }
+}
+
 bool GameView::isRightSideColumn(int col) const
 {
     return col >= 5 && col < GameConfig::Cols;
@@ -149,7 +157,9 @@ void GameView::mousePressEvent(QMouseEvent* event)
     QPointF scenePos = mapToScene(event->pos());
     QPoint cell = scenePosToCell(scenePos);
     if (cell.x() >= 0 && cell.y() >= 0) {
-        if (zombieMode) {
+        if (shovelMode) {
+            emit shovelCellClicked(cell.x(), cell.y());
+        } else if (zombieMode) {
             if (isRightSideColumn(cell.y())) {
                 emit zombieCellClicked(cell.x(), cell.y());
             }
@@ -166,7 +176,9 @@ void GameView::mouseMoveEvent(QMouseEvent* event)
     QPoint cell = scenePosToCell(scenePos);
 
     bool canHighlight = false;
-    if (zombieMode) {
+    if (shovelMode) {
+        canHighlight = cell.x() >= 0;
+    } else if (zombieMode) {
         canHighlight = plantSelectionEnabled && cell.x() >= 0 && isRightSideColumn(cell.y());
     } else {
         canHighlight = plantSelectionEnabled && cell.x() >= 0;
@@ -212,7 +224,12 @@ void GameView::updateHoverHighlight(const QPoint& cell)
         hoverHighlight->setZValue(100);
     }
 
-    if (zombieMode) {
+    if (shovelMode) {
+        QColor highlightColor(255, 50, 50, 100);
+        QPen pen(highlightColor, 3);
+        hoverHighlight->setPen(pen);
+        hoverHighlight->setBrush(QBrush(highlightColor, Qt::Dense5Pattern));
+    } else if (zombieMode) {
         QColor highlightColor(255, 107, 107, 80);
         QPen pen(highlightColor, 3);
         hoverHighlight->setPen(pen);

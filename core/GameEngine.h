@@ -28,6 +28,7 @@ private:
     int totalWave;
     int zombiesInCurrentWave;
     bool waveCleared;
+    QHash<QString, QElapsedTimer> plantCooldowns;
 
 public:
     GameEngine();
@@ -41,6 +42,7 @@ public:
     void stop();
     bool placePlant(QString plantType, int row, int col);
     bool removePlant(int row, int col);
+    bool shovelPlant(int row, int col);
     bool placeZombie(QString zombieType, int row, int col);
     void checkPlantAttack();
     void checkSunProduction();
@@ -57,6 +59,7 @@ public:
     void checkWaveTransition();
     void startNextWave();
     void removeEntitySafely(GameEntity* entity);
+    int getPlantCooldownRemaining(const QString& type) const;
     bool isZombieMode() const { return zombieMode; }
 signals:
     void sunChanged(int value);
@@ -68,4 +71,5 @@ signals:
     void sunCreated(Sun* sun);
     void sunCollected(Sun* sun);
     void entityAnimationChanged(GameEntity* entity, AnimationState state);
+    void plantCooldownChanged(const QString& plantType, int cooldownRemainingMs);
 };
