@@ -68,10 +68,11 @@ void DancingZombie::updateEntity()
 
 void DancingZombie::beginSummon()
 {
-    if (!isAlive() || summoning || isAttacking()) {
+    if (!isAlive() || summoning) {
         return;
     }
 
+    stopAttack();
     summoning = true;
     emit summonAnimationStarted(this);
 
