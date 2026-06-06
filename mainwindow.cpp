@@ -242,8 +242,7 @@ void MainWindow::startGameInternal()
     bgmPlayer = new QMediaPlayer(this);
     auto* audioOutput = new QAudioOutput(this);
     bgmPlayer->setAudioOutput(audioOutput);
-    bgmPlayer->setSource(QUrl::fromLocalFile(
-        QString(PROJECT_SOURCE_DIR) + "/resources/bgm.mp3"));
+    bgmPlayer->setSource(QUrl("qrc:/images/music/bgm.mp3"));
     bgmPlayer->setLoops(QMediaPlayer::Infinite);
     audioOutput->setVolume(0.5);
     bgmPlayer->play();

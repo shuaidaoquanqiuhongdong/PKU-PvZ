@@ -229,5 +229,6 @@
         <file alias="kimsunflower/produce_6.png">images/kimsunflower/produce_6.png</file>
 
         <file alias="rainchili/idle_0.png">images/rainchili/idle_0.png</file>
+        <file alias="music/bgm.mp3">music/PvZ_BGM.MP3</file>
     </qresource>
 </RCC>
